@@ -2,7 +2,7 @@
 
 ## Overview
 
-Schneider Route Finder is a map-based web application designed to assist Schneider’s clients in finding the most suitable routes based on their specific needs. The application prioritizes UI-friendliness, efficiency, and respect for users' time, providing valuable route insights to enhance decision-making.
+Our app is a map-based web application designed to assist Schneider’s clients in finding the most suitable routes based on their specific needs. The application prioritizes UI-friendliness, efficiency, and respect for users' time, providing valuable route insights to enhance decision-making.
 
 ## Features
 * Map-Based Search: Displays routes visually with key information.
