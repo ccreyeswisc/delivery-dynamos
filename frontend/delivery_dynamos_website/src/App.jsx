@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import './components/RouteSidebar.css';
+import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap styles
+import MapComponent from "./MapComponent"; // Import map component
 import RouteSidebar from './components/RouteSidebar';
 
 function App() {
@@ -10,7 +10,11 @@ function App() {
     {
       id: 1,
       pickup: "La Crosse, WI",
+      pickupLat: 43.8138,
+      pickupLng: -91.2519,
       dropoff: "Lafayette, IL",
+      dropoffLat: 40.4173,
+      dropoffLng: -88.6111,
       day: "Thursday",
       date: "02.13.25",
       time: "16:20-18:14",
@@ -23,7 +27,11 @@ function App() {
     {
       id: 2,
       pickup: "Rochester, WI",
+      pickupLat: 42.7545,
+      pickupLng: -88.2216,
       dropoff: "Indianapolis, IL",
+      dropoffLat: 39.7684,
+      dropoffLng: -86.1581,
       day: "Friday",
       date: "02.14.25",
       time: "09:10-11:10",
@@ -34,7 +42,11 @@ function App() {
     {
       id: 3,
       pickup: "Madison, WI",
+      pickupLat: 43.0731,
+      pickupLng: -89.4012,
       dropoff: "Muncie, IL",
+      dropoffLat: 40.1934,
+      dropoffLng: -88.3947,
       day: "Friday",
       date: "02.14.25",
       time: "09:10-11:10",
@@ -45,7 +57,11 @@ function App() {
     {
       id: 4,
       pickup: "Dubuque, WI",
+      pickupLat: 42.5006,
+      pickupLng: -90.6646,
       dropoff: "Indianapolis, IL",
+      dropoffLat: 39.7684,
+      dropoffLng: -86,
       day: "Friday",
       date: "02.14.25",
       time: "09:10-11:10",
@@ -56,7 +72,11 @@ function App() {
     {
       id: 5,
       pickup: "Waterloo, WI",
+      pickupLat: 43.1833,
+      pickupLng: -88.9893,
       dropoff: "Bloomington, IL",
+      dropoffLat: 40.4842,
+      dropoffLng: -88.9937,
       day: "Friday",
       date: "02.14.25",
       time: "09:10-11:10",
@@ -67,64 +87,18 @@ function App() {
   ];
 
   const [selectedRouteId, setSelectedRouteId] = useState(null);
-  
+
   const handleRouteSelect = (routeId) => {
     setSelectedRouteId(routeId);
     console.log(`Route ${routeId} selected`);
-    //update map
   };
 
   return (
-      <div className="app">
-      <RouteSidebar 
-        routes={routes} 
-        onRouteSelect={handleRouteSelect} //route is selected and should expand info
-      />
-      <div className="map-container">
-        {/* map component*/}
-        <div className="map-placeholder">
-          <h2>Map Area</h2>
-          {selectedRouteId && <p>Selected Route: {selectedRouteId}</p>}
-        </div>
-      </div>
+    <div>
+      <MapComponent routes={routes}/> {/* Full-screen map */}
+      <RouteSidebar routes={routes} onRouteSelect={handleRouteSelect} />
     </div>
-  )
+  );
+}
 
-// import "./App.css";
-// import MapComponent from "./MapComponent"; // Import the map component
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import { Container, Row, Col } from 'react-bootstrap'; // Import Bootstrap components
-// // import TrimbleMaps from "@trimblemaps/trimblemaps-js";
-
-
-// function App() {
-
-//   return (
-//     <Container fluid className="h-100">
-//       <Row className="h-100">
-//         {/* Left Side - Map (Fixed Size & Centered) */}
-//         <Col lg={6} className="d-flex align-items-center justify-content-center">
-//           {/* <div id="myMap" style={{ height: "800px", width: "1200px" }}></div>; */}
-//           <MapComponent />
-//         </Col>
-
-//         {/* Right Side - Content (Centered) */}
-//         <Col lg={6} className="d-flex align-items-center justify-content-center bg-primary text-white">
-//           <h2>Right Side Content</h2>
-//         </Col>
-//       </Row>
-//     </Container>
-//   );
-// }
-
-// export default App;
-
-// import "./App.css";
-// import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap styles
-// import MapComponent from "./MapComponent"; // Import map component
-
-// function App() {
-//   return <MapComponent />; // Display full-screen map
-// }
-
-// export default App;
+export default App;
