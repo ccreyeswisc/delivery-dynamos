@@ -1,0 +1,104 @@
+.route-sidebar {
+    width: 300px;
+    height: 100vh;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    padding: 15px;
+  }
+  
+  .route-sidebar h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .routes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .route-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .route-card:hover {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .route-card.selected {
+    border-color: #3a86ff;
+    box-shadow: 0 0 8px rgba(58, 134, 255, 0.3);
+  }
+  
+  .route-header {
+    display: flex;
+    margin-bottom: 8px;
+  }
+  
+  .route-number {
+    font-weight: bold;
+    margin-right: 8px;
+  }
+  
+  .route-cities {
+    font-weight: bold;
+  }
+  
+  .route-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .route-day-date {
+    color: #6c5ce7;
+  }
+  
+  .route-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .route-duration, .route-distance {
+    color: #555;
+  }
+  
+  .route-pay {
+    font-weight: bold;
+    color: #00b894;
+  }
+  
+  .route-instructions {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #555;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+  }
+  
+  .confirm-button {
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .confirm-button button {
+    background-color: #e6b000;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+  }
+  
+  .confirm-button button:hover {
+    background-color: #d9a400;
+  }
