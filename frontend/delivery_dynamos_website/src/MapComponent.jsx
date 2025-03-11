@@ -75,7 +75,20 @@ const MapComponent = ({ routes }) => {
               },
               filter: ['==', ['get', 'type'], 'dropoff']
             });
-          });          
+            routes.forEach(route => {
+                const myRoute = new TrimbleMaps.Route({
+                  routeId: `route-${route.id}`,
+                  stops: [
+                    new TrimbleMaps.LngLat(route.pickupLng, route.pickupLat),
+                    new TrimbleMaps.LngLat(route.dropoffLng, route.dropoffLat)
+                  ]
+                  
+                });
+                myRoute.addTo(map)
+              
+              });   
+          });  
+             
               
     }, [routes]);
 
