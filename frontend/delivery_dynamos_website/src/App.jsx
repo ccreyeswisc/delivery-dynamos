@@ -1,11 +1,16 @@
-import { useState } from 'react'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
 import './components/RouteSidebar.css';
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap styles
 import MapComponent from "./MapComponent"; // Import map component
 import RouteSidebar from './components/RouteSidebar';
+import { Button } from 'react-bootstrap';
+import SearchModal from './components/SearchModal';
 
 function App() {
+  const [showModal, setShowModal] = useState(false);
+  const [apiRoutes, setApiRoutes] = useState([]);
+  const [selectedRouteId, setSelectedRouteId] = useState(null);
   const routes = [
     {
       id: 1,
@@ -86,7 +91,61 @@ function App() {
     }
   ];
 
-  const [selectedRouteId, setSelectedRouteId] = useState(null);
+  // Fetch routes from API
+  useEffect(() => {
+    fetch("https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/all-routes")
+      .then(response => response.json())
+      .then(data => {
+        // Transform data to match the expected structure
+        // const transformedRoutes = data.map(route => ({
+        //   id: route.load_id,
+        //   totalDistance: route.total_distance,
+        //   totalWeight: route.total_weight,
+        //   cost: route.cost,
+        //   numberOfStops: route.number_of_stops,
+        //   stops: route.stops.map(stop => ({
+        //     id: stop.stop_id,
+        //     sequence: stop.stop_sequence,
+        //     locationName: stop.location_name,
+        //     pickupTime: stop.pickup_time,
+        //     dropoffTime: stop.dropoff_time,
+        //     address: `${stop.address.address_line_1}, ${stop.address.city}, ${stop.address.state} ${stop.address.postal_code}`,
+        //     coordinates: {
+        //       lat: stop.address.coordinates.lat,
+        //       lng: stop.address.coordinates.long
+        //     }
+        //   }))
+        // }));
+        // setApiRoutes(transformedRoutes);
+        const transformedRoutes = apiRoutes.map(route => {
+          // Ensure there are at least two stops to define a route
+          if (route.stops.length < 2) return null;
+        
+          return {
+            id: route.id,
+            pickup: route.stops[0].locationName,
+            pickupLat: route.stops[0].coordinates.lat,
+            pickupLng: route.stops[0].coordinates.lng,
+            dropoff: route.stops[route.stops.length - 1].locationName,
+            dropoffLat: route.stops[route.stops.length - 1].coordinates.lat,
+            dropoffLng: route.stops[route.stops.length - 1].coordinates.lng,
+            stops: route.stops.map(stop => ({
+              id: stop.id,
+              lat: stop.coordinates.lat,
+              lng: stop.coordinates.lng,
+              name: stop.locationName,
+            })),
+            totalDistance: route.totalDistance,
+            totalWeight: route.totalWeight,
+            cost: route.cost
+          };
+        }).filter(route => route !== null); // Remove null routes
+        
+        setApiRoutes(transformedRoutes);
+        
+      })
+      .catch(error => console.error("Error fetching routes:", error));
+  }, []);
 
   const handleRouteSelect = (routeId) => {
     setSelectedRouteId(routeId);
@@ -95,8 +154,21 @@ function App() {
 
   return (
     <div>
-      <MapComponent routes={routes}/> {/* Full-screen map */}
-      <RouteSidebar routes={routes} onRouteSelect={handleRouteSelect} />
+      {/* Search Button */}
+      <Button 
+        variant="primary" 
+        onClick={() => setShowModal(true)} 
+        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+      >
+        Search
+      </Button>
+
+      {/* Search Modal */}
+      <SearchModal show={showModal} handleClose={() => setShowModal(false)} />
+
+      {/* Map and Sidebar */}
+      <MapComponent routes={routes} /> {/* Pass API data */}
+      <RouteSidebar onRouteSelect={handleRouteSelect} />
     </div>
   );
 }
