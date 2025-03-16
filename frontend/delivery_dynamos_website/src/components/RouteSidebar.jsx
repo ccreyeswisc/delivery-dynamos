@@ -8,7 +8,7 @@ const RouteSidebar = ({ onRouteSelect }) => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch('https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/all-routes');
+        const response = await fetch('https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/routes');
         const data = await response.json();
 
         const formattedRoutes = data.map((route) => {
@@ -19,8 +19,8 @@ const RouteSidebar = ({ onRouteSelect }) => {
 
           return {
             id: route.load_id,
-            pickup: firstStop ? `${firstStop.address.city}, ${firstStop.address.state}` : 'Unknown',
-            dropoff: lastStop ? `${lastStop.address.city}, ${lastStop.address.state}` : 'Unknown',
+            pickup: firstStop ? `${firstStop.city}, ${firstStop.state}` : 'Unknown',
+            dropoff: lastStop ? `${lastStop.city}, ${lastStop.state}` : 'Unknown',
             day: new Date(firstStop.pickup_time).toLocaleDateString('en-US', { weekday: 'long' }),
             date: new Date(firstStop.pickup_time).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }),
             time: `${new Date(firstStop.pickup_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${new Date(lastStop.dropoff_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
@@ -75,7 +75,7 @@ const RouteSidebar = ({ onRouteSelect }) => {
                 {route.stops.map((stop) => (
                   <div key={stop.stop_id} className="stop-card">
                     <p><strong>Stop {stop.stop_sequence}:</strong> {stop.location_name}</p>
-                    <p>{stop.address.address_line_1}, {stop.address.city}, {stop.address.state} {stop.address.postal_code}</p>
+                    <p>{stop.address_line_1}, {stop.city}, {stop.state} {stop.postal_code}</p>
                     <p><strong>Pickup:</strong> {new Date(stop.pickup_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                     <p><strong>Dropoff:</strong> {new Date(stop.dropoff_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>

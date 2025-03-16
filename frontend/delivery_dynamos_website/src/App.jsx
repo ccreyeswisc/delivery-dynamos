@@ -17,7 +17,7 @@ function App() {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch('https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/all-routes');
+        const response = await fetch('https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/routes');
         const data = await response.json();
 
         const formattedRoutes = data.map((route) => {
@@ -28,10 +28,10 @@ function App() {
 
           return {
             id: route.load_id,
-            pickupLong: firstStop ? Number(firstStop.address.coordinates.long) : null,
-            pickupLat: firstStop ? Number(firstStop.address.coordinates.lat) : null,
-            dropoffLong: lastStop ? Number(lastStop.address.coordinates.long) : null,
-            dropoffLat: lastStop ? Number(lastStop.address.coordinates.lat) : null,
+            pickupLong: firstStop ? Number(firstStop.longitude) : null,
+            pickupLat: firstStop ? Number(firstStop.latitude) : null,
+            dropoffLong: lastStop ? Number(lastStop.longitude) : null,
+            dropoffLat: lastStop ? Number(lastStop.latitude) : null,
             day: new Date(firstStop.pickup_time).toLocaleDateString('en-US', { weekday: 'long' }),
             date: new Date(firstStop.pickup_time).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }),
             time: `${new Date(firstStop.pickup_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${new Date(lastStop.dropoff_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
