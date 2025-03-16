@@ -1,0 +1,61 @@
+{
+    "load_id":12345,
+    "total_distance":162.6,
+    "total_weight":25000,
+    "number_of_stops":3,
+    "stops" : [
+        {
+    "stop_id": "67890",
+    "stop_sequence": 1,
+    "location_name": "Warehouse A", 
+    "pickup_time": "2025-03-15T09:00:00Z", 
+    "dropoff_time": "2025-03-15T12:00:00Z", 
+    "address": {
+        "address_line_1": "1234 Industrial St",
+        "address_line_2": "Suite 100", 
+        "city": "New York",
+        "state": "NY",
+        "postal_code": "10001",
+        "time_zone": "America/New_York",
+        "country": "USA"
+    }
+    }, 
+    {
+        "stop_id": "10293",
+        "stop_sequence": 2,
+        "location_name": "Warehouse B", 
+        "pickup_time": "2025-03-15T09:00:00Z", 
+        "dropoff_time": "2025-03-15T12:00:00Z", 
+        "address": {
+            "address_line_1": "1234 Industrial St",
+            "address_line_2": "Suite 100", 
+            "city": "New York",
+            "state": "NY",
+            "postal_code": "10001",
+            "time_zone": "America/New_York",
+            "country": "USA"
+        }
+    }, 
+    {
+        "stop_id": "09824",
+        "stop_sequence": 3,
+        "location_name": "Warehouse C", 
+        "pickup_time": "2025-03-15T09:00:00Z", 
+        "dropoff_time": "2025-03-15T12:00:00Z", 
+        "address": {
+            "address_line_1": "1234 Industrial St",
+            "address_line_2": "Suite 100", 
+            "city": "New York",
+            "state": "NY",
+            "postal_code": "10001",
+            "time_zone": "America/New_York",
+            "country": "USA"
+        }
+    }
+    ], 
+    "load_details": {
+       "hazardous":false,
+       "high_value":false,
+       "temperature_controlled":true
+    }
+ }
