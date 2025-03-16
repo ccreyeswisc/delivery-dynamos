@@ -3,7 +3,7 @@ import sqlite3
 import requests
 from urllib.parse import urlencode
 
-con = sqlite3.connect('./database/locations.db')
+con = sqlite3.connect('./routes.db')
 con.row_factory = sqlite3.Row
 cur = con.cursor()
 
@@ -52,7 +52,7 @@ def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
 
     return list(set(zip_codes))
 
-# Finds all Places from the SQLite database that match any of the zip codes in `zips`
+# Finds all Locations from the SQLite database that match any of the zip codes in `zips`
 def places_in_zip(zips: list[str]) -> list[dict]:
     zips_str = ', '.join(f"'{z}'" for z in zips)
     placeholders = ', '.join('?' for _ in zips)
