@@ -12,6 +12,7 @@
   "dependencies": {
     "@trimblemaps/trimblemaps-js": "^3.22.0",
     "bootstrap": "^5.3.3",
+    "country-state-city": "^3.2.1",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.0.0"
