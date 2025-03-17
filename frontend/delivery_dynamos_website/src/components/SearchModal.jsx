@@ -43,6 +43,41 @@ const SearchModal = ({ show, handleClose }) => {
     setFilteredCities([]);
   };
 
+  const handleConfirm = async () => {
+    const requestBody = {
+      origin,
+      destination,
+      originRadius,
+      destinationRadius,
+      originDateFrom: originDateFrom ? originDateFrom.toISOString() : null,
+      originDateTo: originDateTo ? originDateTo.toISOString() : null,
+      destinationDateFrom: destinationDateFrom ? destinationDateFrom.toISOString() : null,
+      destinationDateTo: destinationDateTo ? destinationDateTo.toISOString() : null,
+    };
+
+    try {
+      const response = await fetch('https://your-api-endpoint.com/search-routes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log('Search successful:', responseData);
+      alert('Route Selected Successfully!');
+    } catch (error) {
+      console.error('Error searching routes:', error);
+      alert('Failed to search routes. Please try again.');
+    }
+  };
+
+
   return (
     <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
@@ -100,7 +135,7 @@ const SearchModal = ({ show, handleClose }) => {
               <ul className="list-group position-absolute w-100" style={{ zIndex: 1000 }}>
                 {filteredDestinationCities.map((city) => (
                   <li
-                    key={`${city.name}-${city.stateCode}`} 
+                    key={`${city.name}-${city.stateCode}`}
                     className="list-group-item list-group-item-action"
                     onClick={() => selectCity(city, setDestination, setFilteredDestinationCities)}
                   >
@@ -125,9 +160,13 @@ const SearchModal = ({ show, handleClose }) => {
           </div>
         </LocalizationProvider>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>Close</Button>
-        <Button variant="primary" onClick={() => alert('Route Selected')}>Confirm</Button>
+      <Modal.Footer className="d-flex w-100 gap-2">
+        <Button variant="secondary" onClick={handleClose} className="flex-grow-1">
+          Close
+        </Button>
+        <Button variant="primary" onClick={handleConfirm} className="flex-grow-1">
+          Confirm
+        </Button>
       </Modal.Footer>
     </Modal>
   );

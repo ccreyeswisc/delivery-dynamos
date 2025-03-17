@@ -6,12 +6,13 @@ import MapComponent from "./MapComponent"; // Import map component
 import RouteSidebar from './components/RouteSidebar';
 import { Button } from 'react-bootstrap';
 import SearchModal from './components/SearchModal';
+import SearchIcon from '@mui/icons-material/Search';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [apiRoutes, setApiRoutes] = useState([]);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
- 
+
 
   // Fetch routes from API
   useEffect(() => {
@@ -60,13 +61,34 @@ function App() {
   return (
     <div>
       {/* Search Button */}
-      <Button 
+      {/* <Button 
         variant="primary" 
         onClick={() => setShowModal(true)} 
         style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
       >
         Search
+      </Button> */}
+      <Button
+        variant="light"
+        onClick={() => setShowModal(true)}
+        style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          zIndex: 1000,
+          border: '1px solid #ccc',
+          padding: '12px 16px', // Increased padding for a bigger button
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+        }}
+       
+      >
+        <SearchIcon style={{ fontSize: '32px' }} /> {/* Increased icon size */}
       </Button>
+
+
 
       {/* Search Modal */}
       <SearchModal show={showModal} handleClose={() => setShowModal(false)} />
