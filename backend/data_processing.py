@@ -3,17 +3,18 @@ import pandas as pd
 from tqdm import tqdm
 import pc_miler_api as pc
 from datetime import datetime, timedelta
+import random
 
 # Formats the combined routes/locations data by renaming columns and removing unnecessary columns in place
 def format_routes(df: pd.DataFrame) -> None:
 
     def remove_locations(locations):
-        removed_locations_columns = ['LOAD_ID', 'STOP_TYPE', 'ACTIVITY_TYPE', 'CREATED_DATE', 'UPDATED_DATE']
+        removed_locations_columns = ['LOAD_ID', 'STOP_TYPE', 'ACTIVITY_TYPE', 'CREATED_DATE', 'UPDATED_DATE', 'APPOINTMENT_STATE']
         return [{k : v for k, v in location.items() if k not in removed_locations_columns} for location in locations]
 
     def rename_locations(locations):
-        renamed_locations_columns = {'STOP_ID' : 'stop_id', 'STOP_SEQUENCE' : 'stop_sequence', 'APPOINTMENT_FROM' : 'pickup_time', 	'APPOINTMENT_TO' : 'dropoff_time', 'CITY' : 'city', 'STATE' : 'state', 'POSTAL_CODE' : 'postal_code', 'TIME_ZONE' : 'time_zone', 'COUNTRY' : 'country', 'LOCATION_NAME' : 'location_name', 'ADDRESS_LINE_1' : 'address_line_1', 'ADDRESS_LINE_2' : 'address_line_2', 'APPOINTMENT_STATE' : 'state'}
-        return [{renamed_locations_columns.get(k, k) : v for k, v in location.items()} for location in locations]
+        renamed_locations_columns = {'STOP_ID' : 'stop_id', 'STOP_SEQUENCE' : 'stop_sequence', 'APPOINTMENT_FROM' : 'pickup_time', 	'APPOINTMENT_TO' : 'dropoff_time', 'CITY' : 'city', 'STATE' : 'state', 'POSTAL_CODE' : 'postal_code', 'TIME_ZONE' : 'time_zone', 'COUNTRY' : 'country', 'LOCATION_NAME' : 'location_name', 'ADDRESS_LINE_1' : 'address_line_1', 'ADDRESS_LINE_2' : 'address_line_2'}
+        return [{renamed_locations_columns.get(k, k) : v for k, v in location.items()} for location in locations]        
  
     # remove redundant Routes columns
     removed_routes_columns = ['POSTING_STATUS', 'SOURCE_SYSTEM', 'HAS_APPOINTMENTS', 'DISTANCE_UOM', 'WEIGHT_UOM', 'TRANSPORT_MODE', 'CREATED_DATE', 'UPDATED_DATE', 'MANAGED_EQUIPMENT', 'LOAD_NUMBER_ALIAS', 'IS_CARB', 'FPC', 'FPO', 'DIVISION', 'CAPACITY_TYPE', 'EXTENDED_NETWORK']
@@ -28,6 +29,11 @@ def format_routes(df: pd.DataFrame) -> None:
 
     # rename Locations column headers
     df['stops'] = df['stops'].apply(rename_locations)
+
+    # add fake costs for each route
+    df['cost'] = None
+    for i in range(len(df)):
+        df.at[i, 'cost'] = "{:.2f}".format(round(random.random() * 1000, 2))
 
 
 # GET Request for Flask API
@@ -52,6 +58,8 @@ def all_routes() -> pd.DataFrame:
 
     # process the resulting df to remove unnecessary columns and rename columns
     format_routes(routes)
+
+    # print(routes.loc[0].to_dict())
     
     return routes
 
@@ -144,10 +152,10 @@ if __name__ == '__main__':
     ############################################
 
     start_location = 'Madison, WI 53703'
-    start_radius = '50.0'
+    start_radius = '100.0'
     # start_day = '03-01-2025'
 
-    end_location = 'Chicago, IL '
+    end_location = 'Chicago, IL'
     end_radius = '50.0'
     # end_day = '03-02-2025'
 

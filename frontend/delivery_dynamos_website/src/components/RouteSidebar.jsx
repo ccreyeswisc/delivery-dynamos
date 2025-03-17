@@ -17,18 +17,13 @@ const RouteSidebar = ({ onRouteSelect }) => {
         const data = await response.json();
         const routes = data.routes.filter(route => {return route.stops.length > 1})
 
+        console.log(routes[0])
+
         const formattedRoutes = routes.map((route) => {
           const firstStop = route.stops.find(stop => stop.stop_sequence === 1 || stop.stop_sequence === "1");
           const lastStop = route.stops.reduce((prev, current) =>
             prev.stop_sequence > current.stop_sequence ? prev : current
           );
-
-          // console.log(firstStop)
-          // console.log(lastStop.pickup_time)
-
-          // if (!firstStop) {
-          //   console.log(route)
-          // }
 
           return {
             id: route.load_id,
@@ -68,7 +63,7 @@ const RouteSidebar = ({ onRouteSelect }) => {
             onClick={() => toggleExpand(route.id)}
           >
             <div className="route-header">
-              <span className="route-number">{route.id}.</span>
+              {/* <span className="route-number">{route.id}.</span> */}
               <span className="route-cities">{route.pickup} - {route.dropoff}</span>
             </div>
             <div className="route-details">
