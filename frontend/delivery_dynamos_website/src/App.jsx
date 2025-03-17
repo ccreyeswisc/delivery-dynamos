@@ -18,17 +18,29 @@ function App() {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch('https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/routes');
+        const response = await fetch('http://127.0.0.1:5000/api/all_routes', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
         const data = await response.json();
+        // const routes = data.routes.filter(route => {return route.stops.length > 1})
+        const routes = data.routes.filter(route => route.stops.length > 1).slice(0, 10); // Get only the first 10 routes
 
-        const formattedRoutes = data.map((route) => {
-          const firstStop = route.stops.find(stop => stop.stop_sequence === 1);
+
+        console.log(routes[0])
+
+        const formattedRoutes = routes.map((route) => {
+          const firstStop = route.stops.find(stop => stop.stop_sequence === 1 || stop.stop_sequence === "1");
           const lastStop = route.stops.reduce((prev, current) =>
             prev.stop_sequence > current.stop_sequence ? prev : current
           );
 
           return {
             id: route.load_id,
+            pickup: firstStop ? `${firstStop.city}, ${firstStop.state}` : 'Unknown',
+            dropoff: lastStop ? `${lastStop.city}, ${lastStop.state}` : 'Unknown',
             pickupLong: firstStop ? Number(firstStop.longitude) : null,
             pickupLat: firstStop ? Number(firstStop.latitude) : null,
             dropoffLong: lastStop ? Number(lastStop.longitude) : null,
@@ -44,6 +56,7 @@ function App() {
         });
 
         setApiRoutes(formattedRoutes);
+        console.log(formattedRoutes)
       } catch (error) {
         console.error('Error fetching routes:', error);
       }
@@ -62,12 +75,12 @@ function App() {
     <div>
       {/* Search Button */}
       {/* <Button 
-        variant="primary" 
-        onClick={() => setShowModal(true)} 
-        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
-      >
-        Search
-      </Button> */}
+        variant="primary" 
+        onClick={() => setShowModal(true)} 
+        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+      >
+        Search
+      </Button> */}
       <Button
         variant="light"
         onClick={() => setShowModal(true)}
@@ -77,25 +90,23 @@ function App() {
           left: '10px',
           zIndex: 1000,
           border: '1px solid #ccc',
-          padding: '12px 16px', // Increased padding for a bigger button
+          padding: '12px 12px', // Increased padding for a bigger button
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: '50%',
         }}
-       
+
       >
         <SearchIcon style={{ fontSize: '32px' }} /> {/* Increased icon size */}
       </Button>
 
 
+      <SearchModal show={showModal} handleClose={() => setShowModal(false)} setApiRoutes={setApiRoutes} />
 
-      {/* Search Modal */}
-      <SearchModal show={showModal} handleClose={() => setShowModal(false)} />
-
-      {/* Map and Sidebar */}
+      {/* Pass the fetched routes to MapComponent and RouteSidebar */}
       {apiRoutes.length > 0 && <MapComponent routes={apiRoutes} />}
-      <RouteSidebar onRouteSelect={handleRouteSelect} />
+      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect} />
     </div>
   );
 }
