@@ -1,5 +1,5 @@
-import helpers
-import pc_miler_api as pc
+import backend.helpers as helpers
+import backend.pc_miler_api as pc
 import pandas as pd
 import sqlite3
 from tqdm import tqdm

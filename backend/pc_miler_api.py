@@ -26,7 +26,7 @@ def address_to_coords(query: str) -> dict:
     }
     response = requests.get(url, headers=headers, params=urlencode(params), timeout=10)
     obj = response.json()
-    return obj
+    return obj['Locations'][0]
 
 # Grabs all ZIP codes within `radius` miles of a coordinate pair
 def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
@@ -48,7 +48,7 @@ def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
     }
     response = requests.get(url, headers=headers, params=urlencode(params), timeout=10)
     obj = response.json()
-    zip_codes = [x['POILocation']['Address']['Zip'] for x in obj]
+    zip_codes = [x['POILocation']['Address']['Zip'][0:5] for x in obj]
 
     return list(set(zip_codes))
 
@@ -69,7 +69,7 @@ def main():
     location = 'Madison, WI'
     query = 'all'
 
-    address = address_to_coords(location)['Locations'][0]
+    address = address_to_coords(location)
 
     lat, lng = address['Coords']['Lat'], address['Coords']['Lon']
     radius = 25.0
