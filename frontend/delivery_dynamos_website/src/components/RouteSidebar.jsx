@@ -30,6 +30,24 @@ const RouteSidebar = ({ routes, onRouteSelect }) => {
               <span className="route-distance">{route.distance}</span>
               <span className="route-pay">{route.pay}</span>
             </div>
+
+             {/* Expanded Details */}
+             {expandedRoute === route.id && (
+               <div className="expanded-details">
+                 <h3>Stop Details</h3>
+                 {route.stops.map((stop) => (
+                   <div key={stop.stop_id} className="stop-card">
+                     <p><strong>Stop {stop.stop_sequence}:</strong> {stop.location_name}</p>
+                     <p>{stop.address_line_1}, {stop.city}, {stop.state} {stop.postal_code}</p>
+                     <p><strong>Pickup:</strong> {new Date(stop.pickup_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                     <p><strong>Dropoff:</strong> {new Date(stop.dropoff_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                   </div>
+                 ))}
+                 <div className="confirm-button">
+                   <button>Confirm Trip</button>
+                 </div>
+               </div>
+             )}
           </div>
         ))}
       </div>
