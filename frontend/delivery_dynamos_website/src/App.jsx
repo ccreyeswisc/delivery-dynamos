@@ -56,6 +56,7 @@ function App() {
         });
 
         setApiRoutes(formattedRoutes);
+        console.log(formattedRoutes)
       } catch (error) {
         console.error('Error fetching routes:', error);
       }
@@ -74,12 +75,12 @@ function App() {
     <div>
       {/* Search Button */}
       {/* <Button 
-        variant="primary" 
-        onClick={() => setShowModal(true)} 
-        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
-      >
-        Search
-      </Button> */}
+        variant="primary" 
+        onClick={() => setShowModal(true)} 
+        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+      >
+        Search
+      </Button> */}
       <Button
         variant="light"
         onClick={() => setShowModal(true)}
@@ -95,19 +96,17 @@ function App() {
           justifyContent: 'center',
           borderRadius: '50%',
         }}
-       
+
       >
         <SearchIcon style={{ fontSize: '32px' }} /> {/* Increased icon size */}
       </Button>
 
 
+      <SearchModal show={showModal} handleClose={() => setShowModal(false)} setApiRoutes={setApiRoutes} />
 
-      {/* Search Modal */}
-      <SearchModal show={showModal} handleClose={() => setShowModal(false)} />
-
-      {/* Map and Sidebar */}
+      {/* Pass the fetched routes to MapComponent and RouteSidebar */}
       {apiRoutes.length > 0 && <MapComponent routes={apiRoutes} />}
-      <RouteSidebar onRouteSelect={handleRouteSelect} />
+      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect} />
     </div>
   );
 }
