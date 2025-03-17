@@ -45,18 +45,18 @@ const SearchModal = ({ show, handleClose }) => {
 
   const handleConfirm = async () => {
     const requestBody = {
-      origin,
-      destination,
-      originRadius,
-      destinationRadius,
-      originDateFrom: originDateFrom ? originDateFrom.toISOString() : null,
-      originDateTo: originDateTo ? originDateTo.toISOString() : null,
-      destinationDateFrom: destinationDateFrom ? destinationDateFrom.toISOString() : null,
-      destinationDateTo: destinationDateTo ? destinationDateTo.toISOString() : null,
+      start_location: origin,
+      start_radius: originRadius,
+      start_pickup_time: originDateFrom ? originDateFrom.toISOString() : null,
+      start_dropoff_time: originDateTo ? originDateTo.toISOString() : null,
+      end_location: destination,
+      end_radius: destinationRadius,
+      end_pickup_time: destinationDateFrom ? destinationDateFrom.toISOString() : null,
+      end_dropoff_time: destinationDateTo ? destinationDateTo.toISOString() : null,
     };
 
     try {
-      const response = await fetch('https://your-api-endpoint.com/search-routes', {
+      const response = await fetch('http://127.0.0.1:5000/api/search_routes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

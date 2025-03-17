@@ -68,6 +68,12 @@ def all_routes() -> pd.DataFrame:
 def search_routes(start_location: str = None, start_radius: str = None, start_pickup_time: str = None, start_dropoff_time: str = None, end_location: str = None, end_radius: str = None, end_pickup_time: str = None, end_dropoff_time: str = None) -> pd.DataFrame:
     unfiltered_routes = all_routes()
 
+    # print('start_location:', start_location)
+    # print('start_radius:', start_radius)
+
+    # print('end_location:', end_location)
+    # print('end_radius:', end_radius)
+
     # Remove time filters for now, TODO: add back in
     start_pickup_time = None
     start_dropoff_time = None
@@ -152,7 +158,7 @@ if __name__ == '__main__':
     ############################################
 
     start_location = 'Madison, WI 53703'
-    start_radius = '100.0'
+    start_radius = '50.0'
     # start_day = '03-01-2025'
 
     end_location = 'Chicago, IL'

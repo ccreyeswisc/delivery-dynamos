@@ -3,6 +3,7 @@ from flask_cors import CORS
 import sqlite3
 import requests
 from urllib.parse import urlencode
+from json import loads
 
 import data_processing as dp
 
@@ -95,14 +96,17 @@ def all_routes():
 
 @app.route('/api/search_routes', methods=['POST'])
 def search_routes():
-    start_location = request.args.get('start_location', None)
-    start_radius = request.args.get('start_radius', None)
-    start_pickup_time = request.args.get('start_pickup_time', None)
-    start_dropoff_time = request.args.get('start_dropoff_time', None) 
-    end_location = request.args.get('end_location', None)
-    end_radius = request.args.get('end_radius', None)
-    end_pickup_time = request.args.get('end_pickup_time', None)
-    end_dropoff_time = request.args.get('end_dropoff_time', None)
+    data = loads(request.data.decode('utf8').replace("'", '"'))
+    start_location = data['start_location']
+    start_radius = data['start_radius']
+    start_pickup_time = data['start_pickup_time']
+    start_dropoff_time = data['start_dropoff_time']
+    end_location = data['end_location']
+    end_radius = data['end_radius']
+    end_pickup_time = data['end_pickup_time']
+    end_dropoff_time = data['end_dropoff_time']
+
+    # print(data)
 
     filtered_routes = dp.search_routes(start_location, start_radius, start_pickup_time, start_dropoff_time, end_location, end_radius, end_pickup_time, end_dropoff_time)
     return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
