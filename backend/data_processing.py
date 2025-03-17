@@ -58,8 +58,14 @@ def all_routes() -> pd.DataFrame:
 
 # POST Request for Flask API
 # TODO: Test out date filters and date formatting against frontend date format
-def search_routes(start_location: str = None, start_radius: str = None, start_day: str = None, end_location: str = None, end_radius: str = None, end_day: str = None) -> pd.DataFrame:
+def search_routes(start_location: str = None, start_radius: str = None, start_pickup_time: str = None, start_dropoff_time: str = None, end_location: str = None, end_radius: str = None, end_pickup_time: str = None, end_dropoff_time: str = None) -> pd.DataFrame:
     unfiltered_routes = all_routes()
+
+    # Remove time filters for now, TODO: add back in
+    start_pickup_time = None
+    start_dropoff_time = None
+    end_pickup_time = None
+    end_dropoff_time = None
 
     # find zip codes to keep; filter out the rest
     if start_location and start_radius:
@@ -89,19 +95,21 @@ def search_routes(start_location: str = None, start_radius: str = None, start_da
         routes_datetime_format = "%Y-%m-%dT%H:%M:%S.%f"
         input_datetime_format = "%M-%dT-%Y" # TODO: Fix if necessary
 
-        if start_day:
+        if start_pickup_time and start_dropoff_time:
             start_route_datetime = datetime.strptime(start['pickup_time'][:-7], routes_datetime_format)
-            start_input_datetime = datetime.strptime(start_day, input_datetime_format)
-            start_time_diff = abs(start_route_datetime - start_input_datetime)
+            start_pickup_datetime = datetime.strptime(start_pickup_time, input_datetime_format)
+            start_dropoff_datetime = datetime.strptime(start_dropoff_time, input_datetime_format)
+            valid_start_time = start_pickup_datetime <= start_route_datetime <= start_dropoff_datetime
         else:
-            start_time_diff = None
+            valid_start_time = None
 
-        if end_day:
+        if end_pickup_time and end_dropoff_time:
             end_route_datetime = datetime.strptime(end['dropoff_time'][:-7], routes_datetime_format)
-            end_input_datetime = datetime.strptime(end_day, input_datetime_format)
-            end_time_diff = abs(end_route_datetime - end_input_datetime)
+            end_pickup_datetime = datetime.strptime(end_pickup_time, input_datetime_format)
+            end_dropoff_datetime = datetime.strptime(end_dropoff_time, input_datetime_format)
+            valid_end_time = end_pickup_datetime <= end_route_datetime <= end_dropoff_datetime
         else:
-            end_time_diff = None
+            valid_end_time = None
 
         # Filter pickup locations
         start_postal_code = start['postal_code'][0:5]
@@ -110,8 +118,8 @@ def search_routes(start_location: str = None, start_radius: str = None, start_da
             continue
 
         # Filter pickup day
-        if  start_time_diff and start_time_diff > timedelta(days=1):
-            print(f'Filtered out time that was {start_time_diff} away from start pickup time.')
+        if valid_start_time is not None and valid_start_time:
+            print(f'Filtered out time that was not within the start pickup time.')
             continue
 
         # Filter dropoff locations
@@ -121,8 +129,8 @@ def search_routes(start_location: str = None, start_radius: str = None, start_da
             continue
 
         # Filter dropoff day
-        if  end_time_diff and end_time_diff > timedelta(days=1):
-            print(f'Filtered out time that was {end_time_diff} away from end pickup time.')
+        if  valid_end_time is not None and valid_end_time:
+            print('Filtered out time that was not within the end pickup time.')
             continue
 
         filtered_routes.loc[len(filtered_routes)] = row

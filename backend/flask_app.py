@@ -3,6 +3,8 @@ import sqlite3
 import requests
 from urllib.parse import urlencode
 
+import data_processing as dp
+
 app = Flask(__name__)
 
 # Database connection function
@@ -81,6 +83,27 @@ def places_in_zip():
     conn.close()
 
     return jsonify({'places': rows})
+
+###########################################################################
+
+@app.route('/api/all_routes', methods=['GET'])
+def all_routes():
+    routes = dp.all_routes()
+    return jsonify({'routes' : routes.to_dict(orient="records")})
+
+@app.route('/api/search_routes', methods=['POST'])
+def search_routes():
+    start_location = request.args.get('start_location', None)
+    start_radius = request.args.get('start_radius', None)
+    start_pickup_time = request.args.get('start_pickup_time', None)
+    start_dropoff_time = request.args.get('start_dropoff_time', None) 
+    end_location = request.args.get('end_location', None)
+    end_radius = request.args.get('end_radius', None)
+    end_pickup_time = request.args.get('end_pickup_time', None)
+    end_dropoff_time = request.args.get('end_dropoff_time', None)
+
+    filtered_routes = dp.search_routes(start_location, start_radius, start_pickup_time, start_dropoff_time, end_location, end_radius, end_pickup_time, end_dropoff_time)
+    return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
 
 # Default route
 @app.route('/')
