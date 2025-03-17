@@ -8,14 +8,27 @@ const RouteSidebar = ({ onRouteSelect }) => {
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
-        const response = await fetch('https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/routes');
+        const response = await fetch('http://127.0.0.1:5000/api/all_routes', {
+          method : 'GET', 
+          headers: {
+            'Content-Type': 'application/json'
+        }
+        });
         const data = await response.json();
+        const routes = data.routes.filter(route => {return route.stops.length > 1})
 
-        const formattedRoutes = data.map((route) => {
-          const firstStop = route.stops.find(stop => stop.stop_sequence === 1);
+        const formattedRoutes = routes.map((route) => {
+          const firstStop = route.stops.find(stop => stop.stop_sequence === 1 || stop.stop_sequence === "1");
           const lastStop = route.stops.reduce((prev, current) =>
             prev.stop_sequence > current.stop_sequence ? prev : current
           );
+
+          // console.log(firstStop)
+          // console.log(lastStop.pickup_time)
+
+          // if (!firstStop) {
+          //   console.log(route)
+          // }
 
           return {
             id: route.load_id,

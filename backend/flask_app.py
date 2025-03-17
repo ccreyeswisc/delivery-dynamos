@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import sqlite3
 import requests
 from urllib.parse import urlencode
@@ -6,6 +7,7 @@ from urllib.parse import urlencode
 import data_processing as dp
 
 app = Flask(__name__)
+CORS(app)
 
 # Database connection function
 def get_db_connection():

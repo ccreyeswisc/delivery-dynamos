@@ -4,11 +4,6 @@ from tqdm import tqdm
 import pc_miler_api as pc
 from datetime import datetime, timedelta
 
-con = sqlite3.connect('./routes.db')
-cur = con.cursor()
-all_routes_df = pd.read_sql_query('SELECT * FROM routes', con)
-# print(len(all_routes_df))
-
 # Formats the combined routes/locations data by renaming columns and removing unnecessary columns in place
 def format_routes(df: pd.DataFrame) -> None:
 
@@ -37,6 +32,10 @@ def format_routes(df: pd.DataFrame) -> None:
 
 # GET Request for Flask API
 def all_routes() -> pd.DataFrame:
+
+    con = sqlite3.connect('./routes.db')
+    cur = con.cursor()
+    all_routes_df = pd.read_sql_query('SELECT * FROM routes', con)
 
     # grab all Locations from the locations table
     all_locations_df = pd.read_sql_query('SELECT * FROM locations', con)
