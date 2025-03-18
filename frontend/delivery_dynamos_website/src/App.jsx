@@ -26,7 +26,7 @@ function App() {
         });
         const data = await response.json();
         // const routes = data.routes.filter(route => {return route.stops.length > 1})
-        const routes = data.routes.filter(route => route.stops.length > 1).slice(0, 10); // Get only the first 10 routes
+        const routes = data.routes.filter(route => route.stops.length > 1).slice(0, 100); // Get only the first 10 routes
 
 
         console.log(routes[0])
@@ -105,7 +105,8 @@ function App() {
       <SearchModal show={showModal} handleClose={() => setShowModal(false)} setApiRoutes={setApiRoutes} />
 
       {/* Pass the fetched routes to MapComponent and RouteSidebar */}
-      {apiRoutes.length > 0 && <MapComponent routes={apiRoutes} />}
+      {apiRoutes.length > 0 && <MapComponent key={JSON.stringify(apiRoutes)} routes={apiRoutes} />}
+
       <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect} />
     </div>
   );

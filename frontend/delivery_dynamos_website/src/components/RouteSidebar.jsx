@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './RouteSidebar.css';
 
-const RouteSidebar = ({ routes, onRouteSelect }) => {
+const RouteSidebar = ({ routes, onRouteSelect, onRouteExpand }) => {
   const [expandedRoute, setExpandedRoute] = useState(null);
 
   const toggleExpand = (routeId) => {
     setExpandedRoute(expandedRoute === routeId ? null : routeId);
   };
+  // const [expandedRoute, setExpandedRoute] = useState(null);
+
+  // const toggleExpand = (routeId) => {
+  //   const newExpandedRoute = expandedRoute === routeId ? null : routeId;
+  //   setExpandedRoute(newExpandedRoute);
+  //   onRouteExpand(newExpandedRoute); // Notify parent about expanded route
+  // };
+
 
   return (
     <div className="route-sidebar">
