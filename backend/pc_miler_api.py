@@ -63,21 +63,16 @@ def places_in_zip(zips: list[str]) -> list[dict]:
 
     return rows
 
-
-
-def main():
+if __name__ == "__main__":
     location = 'Madison, WI'
     query = 'all'
 
     address = address_to_coords(location)
 
     lat, lng = address['Coords']['Lat'], address['Coords']['Lon']
-    radius = 25.0
+    radius_miles = 25.0
 
-    zips = radius_zips(query, lat, lng, radius)
+    zips = radius_zips(query, lat, lng, radius_miles)
 
     places = places_in_zip(zips)
-    print(places)
-
-if __name__ == "__main__":
-    main()
+    print(zips)

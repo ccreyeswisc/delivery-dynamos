@@ -2,7 +2,8 @@ import sqlite3
 import pandas as pd
 from tqdm import tqdm
 import pc_miler_api as pc
-from datetime import datetime, timedelta
+from datetime import datetime
+from os.path import exists
 import random
 
 # Formats the combined routes/locations data by renaming columns and removing unnecessary columns in place
@@ -35,6 +36,10 @@ def format_routes(df: pd.DataFrame) -> None:
     for i in range(len(df)):
         df.at[i, 'cost'] = "{:.2f}".format(round(random.random() * 1000, 2))
 
+def save_all_routes() -> None:
+
+    # routes.to_json('./all_routes.json')
+    pass
 
 # GET Request for Flask API
 def all_routes() -> pd.DataFrame:
@@ -58,8 +63,6 @@ def all_routes() -> pd.DataFrame:
 
     # process the resulting df to remove unnecessary columns and rename columns
     format_routes(routes)
-
-    # print(routes.loc[0].to_dict())
     
     return routes
 
@@ -157,7 +160,7 @@ if __name__ == '__main__':
 
     ############################################
 
-    start_location = 'Madison, WI 53703'
+    start_location = 'Madison, WI'
     start_radius = '50.0'
     # start_day = '03-01-2025'
 
