@@ -6,146 +6,65 @@ import MapComponent from "./MapComponent"; // Import map component
 import RouteSidebar from './components/RouteSidebar';
 import { Button } from 'react-bootstrap';
 import SearchModal from './components/SearchModal';
+import SearchIcon from '@mui/icons-material/Search';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [apiRoutes, setApiRoutes] = useState([]);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
-  const routes = [
-    {
-      id: 1,
-      pickup: "La Crosse, WI",
-      pickupLat: 43.8138,
-      pickupLng: -91.2519,
-      dropoff: "Lafayette, IL",
-      dropoffLat: 40.4173,
-      dropoffLng: -88.6111,
-      day: "Thursday",
-      date: "02.13.25",
-      time: "16:20-18:14",
-      duration: "1H 54M",
-      distance: "140 Mi",
-      pay: "$347.00",
-      pickupInstructions: "Check in at main entrance",
-      dropoffInstructions: "Unload at dock 5"
-    },
-    {
-      id: 2,
-      pickup: "Rochester, WI",
-      pickupLat: 42.7545,
-      pickupLng: -88.2216,
-      dropoff: "Indianapolis, IL",
-      dropoffLat: 39.7684,
-      dropoffLng: -86.1581,
-      day: "Friday",
-      date: "02.14.25",
-      time: "09:10-11:10",
-      duration: "4H",
-      distance: "196 Mi",
-      pay: "$614.79"
-    },
-    {
-      id: 3,
-      pickup: "Madison, WI",
-      pickupLat: 43.0731,
-      pickupLng: -89.4012,
-      dropoff: "Muncie, IL",
-      dropoffLat: 40.1934,
-      dropoffLng: -88.3947,
-      day: "Friday",
-      date: "02.14.25",
-      time: "09:10-11:10",
-      duration: "4H",
-      distance: "196 Mi",
-      pay: "$614.79"
-    },
-    {
-      id: 4,
-      pickup: "Dubuque, WI",
-      pickupLat: 42.5006,
-      pickupLng: -90.6646,
-      dropoff: "Indianapolis, IL",
-      dropoffLat: 39.7684,
-      dropoffLng: -86,
-      day: "Friday",
-      date: "02.14.25",
-      time: "09:10-11:10",
-      duration: "4H",
-      distance: "196 Mi",
-      pay: "$614.79"
-    },
-    {
-      id: 5,
-      pickup: "Waterloo, WI",
-      pickupLat: 43.1833,
-      pickupLng: -88.9893,
-      dropoff: "Bloomington, IL",
-      dropoffLat: 40.4842,
-      dropoffLng: -88.9937,
-      day: "Friday",
-      date: "02.14.25",
-      time: "09:10-11:10",
-      duration: "4H",
-      distance: "196 Mi",
-      pay: "$614.79"
-    }
-  ];
+
 
   // Fetch routes from API
   useEffect(() => {
-    fetch("https://1fa0252a-8d91-4b30-98d1-a126a6323e93.mock.pstmn.io/all-routes")
-      .then(response => response.json())
-      .then(data => {
-        // Transform data to match the expected structure
-        // const transformedRoutes = data.map(route => ({
-        //   id: route.load_id,
-        //   totalDistance: route.total_distance,
-        //   totalWeight: route.total_weight,
-        //   cost: route.cost,
-        //   numberOfStops: route.number_of_stops,
-        //   stops: route.stops.map(stop => ({
-        //     id: stop.stop_id,
-        //     sequence: stop.stop_sequence,
-        //     locationName: stop.location_name,
-        //     pickupTime: stop.pickup_time,
-        //     dropoffTime: stop.dropoff_time,
-        //     address: `${stop.address.address_line_1}, ${stop.address.city}, ${stop.address.state} ${stop.address.postal_code}`,
-        //     coordinates: {
-        //       lat: stop.address.coordinates.lat,
-        //       lng: stop.address.coordinates.long
-        //     }
-        //   }))
-        // }));
-        // setApiRoutes(transformedRoutes);
-        const transformedRoutes = apiRoutes.map(route => {
-          // Ensure there are at least two stops to define a route
-          if (route.stops.length < 2) return null;
-        
+    const fetchRoutes = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/all_routes', {
+          method : 'GET', 
+          headers: {
+            'Content-Type': 'application/json'
+        }
+        });
+        const data = await response.json();
+        // const routes = data.routes.filter(route => {return route.stops.length > 1})
+        const routes = data.routes.filter(route => route.stops.length > 1).slice(0, 100); // Get only the first 10 routes
+
+
+        console.log(routes[0])
+
+        const formattedRoutes = routes.map((route) => {
+          const firstStop = route.stops.find(stop => stop.stop_sequence === 1 || stop.stop_sequence === "1");
+          const lastStop = route.stops.reduce((prev, current) =>
+            prev.stop_sequence > current.stop_sequence ? prev : current
+          );
+
           return {
-            id: route.id,
-            pickup: route.stops[0].locationName,
-            pickupLat: route.stops[0].coordinates.lat,
-            pickupLng: route.stops[0].coordinates.lng,
-            dropoff: route.stops[route.stops.length - 1].locationName,
-            dropoffLat: route.stops[route.stops.length - 1].coordinates.lat,
-            dropoffLng: route.stops[route.stops.length - 1].coordinates.lng,
-            stops: route.stops.map(stop => ({
-              id: stop.id,
-              lat: stop.coordinates.lat,
-              lng: stop.coordinates.lng,
-              name: stop.locationName,
-            })),
-            totalDistance: route.totalDistance,
-            totalWeight: route.totalWeight,
-            cost: route.cost
+            id: route.load_id,
+            pickup: firstStop ? `${firstStop.city}, ${firstStop.state}` : 'Unknown',
+            dropoff: lastStop ? `${lastStop.city}, ${lastStop.state}` : 'Unknown',
+            pickupLong: firstStop ? Number(firstStop.longitude) : null,
+            pickupLat: firstStop ? Number(firstStop.latitude) : null,
+            dropoffLong: lastStop ? Number(lastStop.longitude) : null,
+            dropoffLat: lastStop ? Number(lastStop.latitude) : null,
+            day: new Date(firstStop.pickup_time).toLocaleDateString('en-US', { weekday: 'long' }),
+            date: new Date(firstStop.pickup_time).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }),
+            time: `${new Date(firstStop.pickup_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${new Date(lastStop.dropoff_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`,
+            duration: `${Math.ceil(route.total_distance / 60)} hrs`,
+            distance: `${route.total_distance} mi`,
+            pay: `$${route.cost}`,
+            stops: route.stops
           };
-        }).filter(route => route !== null); // Remove null routes
-        
-        setApiRoutes(transformedRoutes);
-        
-      })
-      .catch(error => console.error("Error fetching routes:", error));
+        });
+
+        setApiRoutes(formattedRoutes);
+        console.log(formattedRoutes)
+      } catch (error) {
+        console.error('Error fetching routes:', error);
+      }
+    };
+
+    fetchRoutes();
   }, []);
+
 
   const handleRouteSelect = (routeId) => {
     setSelectedRouteId(routeId);
@@ -155,20 +74,40 @@ function App() {
   return (
     <div>
       {/* Search Button */}
-      <Button 
-        variant="primary" 
-        onClick={() => setShowModal(true)} 
-        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+      {/* <Button 
+        variant="primary" 
+        onClick={() => setShowModal(true)} 
+        style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000 }}
+      >
+        Search
+      </Button> */}
+      <Button
+        variant="light"
+        onClick={() => setShowModal(true)}
+        style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          zIndex: 1000,
+          border: '1px solid #ccc',
+          padding: '12px 12px', // Increased padding for a bigger button
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+        }}
+
       >
-        Search
+        <SearchIcon style={{ fontSize: '32px' }} /> {/* Increased icon size */}
       </Button>
 
-      {/* Search Modal */}
-      <SearchModal show={showModal} handleClose={() => setShowModal(false)} />
 
-      {/* Map and Sidebar */}
-      <MapComponent routes={routes} /> {/* Pass API data */}
-      <RouteSidebar onRouteSelect={handleRouteSelect} />
+      <SearchModal show={showModal} handleClose={() => setShowModal(false)} setApiRoutes={setApiRoutes} />
+
+      {/* Pass the fetched routes to MapComponent and RouteSidebar */}
+      {apiRoutes.length > 0 && <MapComponent key={JSON.stringify(apiRoutes)} routes={apiRoutes} />}
+
+      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect} />
     </div>
   );
 }
