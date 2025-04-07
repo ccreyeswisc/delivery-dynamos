@@ -4,6 +4,7 @@ import sqlite3
 import requests
 from urllib.parse import urlencode
 from json import loads
+from datetime import timedelta, datetime
 
 import data_processing as dp
 
@@ -87,15 +88,19 @@ def places_in_zip():
 
     return jsonify({'places': rows})
 
-###########################################################################
 
+#-----------------------------------------------------------------------------
 @app.route('/api/all_routes', methods=['GET'])
 def all_routes():
     routes = dp.all_routes()
     return jsonify({'routes' : routes.to_dict(orient="records")})
 
+#-----------------------------------------------------------------------------
 @app.route('/api/search_routes', methods=['POST'])
 def search_routes():
+    
+    start_time = datetime.now()
+
     data = loads(request.data.decode('utf8').replace("'", '"'))
     start_location = data['start_location']
     start_radius = data['start_radius']
@@ -106,9 +111,10 @@ def search_routes():
     end_pickup_time = data['end_pickup_time']
     end_dropoff_time = data['end_dropoff_time']
 
-    # print(data)
-
     filtered_routes = dp.search_routes(start_location, start_radius, start_pickup_time, start_dropoff_time, end_location, end_radius, end_pickup_time, end_dropoff_time)
+
+    end_time = datetime.now()
+    print(f'Time to call API: {(end_time - start_time).total_seconds()}')
     return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
 
 # Default route

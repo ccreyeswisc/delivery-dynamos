@@ -1,0 +1,8 @@
+# ----------------- Main ------------------------
+
+# --------------- Frontend ----------------------
+/frontend/delivery_dynamos_website/node_modules/*
+
+# --------------- Backend -----------------------
+/backend/__pycache__/*
+/backend/example_format.json
