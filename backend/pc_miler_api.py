@@ -46,8 +46,10 @@ def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
         'Authorization': f'{apikey}',
         'Content-type': 'application/json'
     }
+
     response = requests.get(url, headers=headers, params=urlencode(params), timeout=10)
     obj = response.json()
+    
     zip_codes = [x['POILocation']['Address']['Zip'][0:5] for x in obj]
 
     return list(set(zip_codes))
@@ -63,21 +65,16 @@ def places_in_zip(zips: list[str]) -> list[dict]:
 
     return rows
 
-
-
-def main():
+if __name__ == "__main__":
     location = 'Madison, WI'
     query = 'all'
 
     address = address_to_coords(location)
 
     lat, lng = address['Coords']['Lat'], address['Coords']['Lon']
-    radius = 25.0
+    radius_miles = 25.0
 
-    zips = radius_zips(query, lat, lng, radius)
+    zips = radius_zips(query, lat, lng, radius_miles)
 
     places = places_in_zip(zips)
-    print(places)
-
-if __name__ == "__main__":
-    main()
+    print(zips)

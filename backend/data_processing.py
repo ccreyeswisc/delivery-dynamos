@@ -1,9 +1,14 @@
 import sqlite3
 import pandas as pd
 from tqdm import tqdm
-import pc_miler_api as pc
-from datetime import datetime, timedelta
+import asyncio
 import random
+from datetime import datetime
+
+import pc_miler_api as pc
+
+# Cache results of all_routes() after first call
+cached_routes = None
 
 # Formats the combined routes/locations data by renaming columns and removing unnecessary columns in place
 def format_routes(df: pd.DataFrame) -> None:
@@ -35,12 +40,15 @@ def format_routes(df: pd.DataFrame) -> None:
     for i in range(len(df)):
         df.at[i, 'cost'] = "{:.2f}".format(round(random.random() * 1000, 2))
 
+def save_all_routes() -> None:
+
+    # routes.to_json('./all_routes.json')
+    pass
 
 # GET Request for Flask API
 def all_routes() -> pd.DataFrame:
 
     con = sqlite3.connect('./routes.db')
-    cur = con.cursor()
     all_routes_df = pd.read_sql_query('SELECT * FROM routes', con)
 
     # grab all Locations from the locations table
@@ -59,20 +67,32 @@ def all_routes() -> pd.DataFrame:
     # process the resulting df to remove unnecessary columns and rename columns
     format_routes(routes)
 
-    # print(routes.loc[0].to_dict())
+    global cached_routes
+    cached_routes = routes
     
     return routes
+
+async def get_start_info(start_location, start_radius):
+    start_coords = await asyncio.to_thread(pc.address_to_coords, start_location)
+    start_lat = start_coords['Coords']['Lat']
+    start_lng = start_coords['Coords']['Lon']
+    start_zips = await asyncio.to_thread(pc.radius_zips, 'all', start_lat, start_lng, start_radius)
+    return start_zips
+
+async def get_end_info(end_location, end_radius):
+    end_coords = await asyncio.to_thread(pc.address_to_coords, end_location)
+    end_lat = end_coords['Coords']['Lat']
+    end_lng = end_coords['Coords']['Lon']
+    end_zips = await asyncio.to_thread(pc.radius_zips, 'all', end_lat, end_lng, end_radius)
+    return end_zips
 
 # POST Request for Flask API
 # TODO: Test out date filters and date formatting against frontend date format
 def search_routes(start_location: str = None, start_radius: str = None, start_pickup_time: str = None, start_dropoff_time: str = None, end_location: str = None, end_radius: str = None, end_pickup_time: str = None, end_dropoff_time: str = None) -> pd.DataFrame:
-    unfiltered_routes = all_routes()
-
-    # print('start_location:', start_location)
-    # print('start_radius:', start_radius)
-
-    # print('end_location:', end_location)
-    # print('end_radius:', end_radius)
+    
+    start_time = datetime.now()
+    unfiltered_routes = cached_routes if isinstance(cached_routes, pd.DataFrame) else all_routes()
+    print(f'Time to grab all routes: {round((datetime.now() - start_time).total_seconds(), 3)}')
 
     # Remove time filters for now, TODO: add back in
     start_pickup_time = None
@@ -80,20 +100,23 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
     end_pickup_time = None
     end_dropoff_time = None
 
-    # find zip codes to keep; filter out the rest
-    if start_location and start_radius:
-        start_coords = pc.address_to_coords(start_location)
-        start_lat, start_lng = start_coords['Coords']['Lat'], start_coords['Coords']['Lon']
-        start_zips = pc.radius_zips('all', start_lat, start_lng, start_radius)
-    else:
-        start_zips = None
+    async def resolve_zip_codes():
+        tasks = []
+        if start_location and start_radius:
+            tasks.append(get_start_info(start_location, start_radius))
+        else:
+            tasks.append(asyncio.sleep(0, result=None))
 
-    if end_location and end_radius:
-        end_coords = pc.address_to_coords(end_location)
-        end_lat, end_lng = end_coords['Coords']['Lat'], end_coords['Coords']['Lon']
-        end_zips = pc.radius_zips('all', end_lat, end_lng, end_radius)
-    else:
-        end_zips = None
+        if end_location and end_radius:
+            tasks.append(get_end_info(end_location, end_radius))
+        else:
+            tasks.append(asyncio.sleep(0, result=None))
+
+        return await asyncio.gather(*tasks)
+
+    start_time = datetime.now()
+    start_zips, end_zips = asyncio.run(resolve_zip_codes())
+    print(f'Time to grab start and end zips: {round((datetime.now() - start_time).total_seconds(), 3)}')
 
     # empty dataframe to fill with filtered routes
     filtered_routes = unfiltered_routes.iloc[0:0].copy()
@@ -125,25 +148,31 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
             valid_end_time = None
 
         # Filter pickup locations
+        verbose = False
+
         start_postal_code = start['postal_code'][0:5]
         if start_zips and start_postal_code not in start_zips:
-            print(f'Filtered out start postal code {start_postal_code}')
+            if verbose:
+                print(f'Filtered out start postal code {start_postal_code}')
             continue
 
         # Filter pickup day
         if valid_start_time is not None and valid_start_time:
-            print(f'Filtered out time that was not within the start pickup time.')
+            if verbose:
+                print(f'Filtered out time that was not within the start pickup time.')
             continue
 
         # Filter dropoff locations
         end_postal_code = end['postal_code'][0:5]
         if end_zips and end_postal_code not in end_zips:
-            print(f'Filtered out end postal code {end_postal_code}')
+            if verbose:
+                print(f'Filtered out end postal code {end_postal_code}')
             continue
 
         # Filter dropoff day
-        if  valid_end_time is not None and valid_end_time:
-            print('Filtered out time that was not within the end pickup time.')
+        if valid_end_time is not None and valid_end_time:
+            if verbose:
+                print('Filtered out time that was not within the end pickup time.')
             continue
 
         filtered_routes.loc[len(filtered_routes)] = row
@@ -157,7 +186,7 @@ if __name__ == '__main__':
 
     ############################################
 
-    start_location = 'Madison, WI 53703'
+    start_location = 'Madison, WI'
     start_radius = '50.0'
     # start_day = '03-01-2025'
 
