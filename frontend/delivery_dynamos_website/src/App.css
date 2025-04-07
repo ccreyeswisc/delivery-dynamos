@@ -54,3 +54,21 @@ html, body, #map {
   width: 100vw !important;
   height: 100vh !important;
 }
+
+.custom-marker {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.pickup-marker {
+  background-color: #007bff; /* Blue */
+}
+
+.dropoff-marker {
+  background-color: #dc3545; /* Red */
+}
+

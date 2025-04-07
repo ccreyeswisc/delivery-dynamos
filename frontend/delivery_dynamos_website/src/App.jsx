@@ -98,7 +98,7 @@ function App() {
         }}
 
       >
-        <SearchIcon style={{ fontSize: '32px' }} /> {/* Increased icon size */}
+        <SearchIcon style={{ fontSize: '32px' }} /> 
       </Button>
 
 
