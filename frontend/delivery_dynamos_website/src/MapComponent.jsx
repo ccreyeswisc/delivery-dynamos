@@ -160,6 +160,11 @@ const MapComponent = ({ routes }) => {
         });
         myRoute.addTo(map);
 
+        myRoute.on("click", () => {
+          console.log("Clicked route!");
+          myRoute.update({ routeColor: "purple" });
+        })
+
         // ✅ Create custom DOM elements for pickup and dropoff
         const pickupEl = document.createElement("div");
         pickupEl.className = "custom-marker pickup-marker";
