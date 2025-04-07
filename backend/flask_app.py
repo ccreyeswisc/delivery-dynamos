@@ -4,7 +4,7 @@ import sqlite3
 import requests
 from urllib.parse import urlencode
 from json import loads
-from datetime import timedelta, datetime
+from datetime import datetime
 
 import data_processing as dp
 
@@ -113,8 +113,7 @@ def search_routes():
 
     filtered_routes = dp.search_routes(start_location, start_radius, start_pickup_time, start_dropoff_time, end_location, end_radius, end_pickup_time, end_dropoff_time)
 
-    end_time = datetime.now()
-    print(f'Time to call API: {(end_time - start_time).total_seconds()}')
+    print(f'Time to run filtered search: {round((datetime.now() - start_time).total_seconds(), 3)}')
     return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
 
 # Default route

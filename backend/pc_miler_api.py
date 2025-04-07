@@ -2,7 +2,6 @@ import sqlite3
 
 import requests
 from urllib.parse import urlencode
-from datetime import timedelta, datetime
 
 con = sqlite3.connect('./routes.db')
 con.row_factory = sqlite3.Row
@@ -48,12 +47,9 @@ def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
         'Content-type': 'application/json'
     }
 
-    start_time = datetime.now()
     response = requests.get(url, headers=headers, params=urlencode(params), timeout=10)
-    end_time = datetime.now()
     obj = response.json()
     
-    print(f'Time to call PC Miler API: {round((end_time - start_time).total_seconds(), 3)}')
     zip_codes = [x['POILocation']['Address']['Zip'][0:5] for x in obj]
 
     return list(set(zip_codes))
