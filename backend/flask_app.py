@@ -21,9 +21,10 @@ region = 'na'
 apikey = '299354C7A83A67439273691EA750BB7F'
 
 # Converts an address string to coordinates
-@app.route('/api/address-to-coords', methods=['GET'])
+@app.route('/api/address-to-coords', methods=['POST'])
 def address_to_coords():
-    query = request.args.get('query')
+
+    query = loads(request.data.decode('utf8').replace("'", '"'))['query']
 
     if not query:
         return jsonify({'error': 'Missing query parameter'}), 400
@@ -41,7 +42,7 @@ def address_to_coords():
     return jsonify(obj['Locations'][0])
 
 # Gets ZIP codes within a given radius of coordinates
-@app.route('/api/radius-zips', methods=['GET'])
+@app.route('/api/radius-zips', methods=['POST'])
 def radius_zips():
     query = request.args.get('query', 'all')
     lat = request.args.get('lat')
