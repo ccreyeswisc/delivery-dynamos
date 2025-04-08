@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import './components/RouteSidebar.css';
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap styles
@@ -54,7 +54,7 @@ function App() {
         });
 
         setApiRoutes(formattedRoutes);
-        console.log(formattedRoutes);
+        setFilteredRoutes(formattedRoutes); // Initialize filtered routes
       } catch (error) {
         console.error('Error fetching routes:', error);
       }
@@ -63,28 +63,29 @@ function App() {
     fetchRoutes();
   }, []);
 
-  // Initialize filtered routes when API routes change
-  useEffect(() => {
-    // Initially, show all routes
-    setFilteredRoutes(apiRoutes);
-  }, [apiRoutes]);
-
-  const handleDateFilter = (daysFromNow) => {
+  // Use memoized version of handleDateFilter to prevent infinite loops
+  const handleDateFilter = useCallback((daysFromNow) => {
     if (apiRoutes.length === 0) return;
     
     console.log(`Filtering for routes up to ${daysFromNow} days from now`);
     
+    // If daysFromNow is -1, show all routes (special value)
+    if (daysFromNow === -1) {
+      console.log("Showing all routes");
+      setFilteredRoutes(apiRoutes);
+      return;
+    }
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Reset time portion
     
-    // Debug logs
+    // Debug logs (limited to reduce console spam)
     console.log("Today's date:", today);
     console.log("Total routes before filtering:", apiRoutes.length);
     
     const filtered = apiRoutes.filter(route => {
       // Make sure we have a valid pickup date
       if (!route.pickupDate || isNaN(route.pickupDate)) {
-        console.log(`Route ${route.id} has invalid pickup date:`, route.pickupDate);
         return false;
       }
       
@@ -92,30 +93,31 @@ function App() {
       const pickupDate = new Date(route.pickupDate);
       pickupDate.setHours(0, 0, 0, 0); // Reset time portion for fair comparison
       
-      // Calculate days difference
-      const diffTime = pickupDate - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      // For debugging
-      if (diffDays >= 0 && diffDays <= daysFromNow) {
-        console.log(`Including route ${route.id} with date ${pickupDate.toLocaleDateString()} (${diffDays} days from now)`);
+      // For routes in the future
+      if (pickupDate >= today) {
+        // Calculate days difference
+        const diffTime = pickupDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Show routes that are within the selected number of days
+        return diffDays <= daysFromNow;
       }
       
-      // Show routes that are within the selected number of days
-      return diffDays >= 0 && diffDays <= daysFromNow;
+      // Include past routes if needed - adjust this logic based on your requirements
+      return false;
     });
     
     console.log("Routes after filtering:", filtered.length);
     setFilteredRoutes(filtered);
-  };
+  }, [apiRoutes]); // Only recreate this function when apiRoutes changes
 
-  const handleRouteSelect = (routeId) => {
+  const handleRouteSelect = useCallback((routeId) => {
     setSelectedRouteId(routeId);
     console.log(`Route ${routeId} selected`);
-  };
+  }, []);
 
   // Handle search results
-  const handleSearchResults = (searchResults) => {
+  const handleSearchResults = useCallback((searchResults) => {
     if (!searchResults || !searchResults.routes) {
       console.error("Invalid search results", searchResults);
       return;
@@ -150,7 +152,7 @@ function App() {
 
     setApiRoutes(formattedRoutes);
     setFilteredRoutes(formattedRoutes);
-  };
+  }, []);
 
   return (
     <div>
