@@ -4,21 +4,21 @@
     "total_weight":25000,
     "number_of_stops":3,
     "stops" : [
-        {
-    "stop_id": "67890",
-    "stop_sequence": 1,
-    "location_name": "Warehouse A", 
-    "pickup_time": "2025-03-15T09:00:00Z", 
-    "dropoff_time": "2025-03-15T12:00:00Z", 
-    "address": {
+    {
+        "stop_id": "67890",
+        "stop_sequence": 1,
+        "location_name": "Warehouse A", 
+        "pickup_time": "2025-03-15T09:00:00Z", 
+        "dropoff_time": "2025-03-15T12:00:00Z", 
         "address_line_1": "1234 Industrial St",
         "address_line_2": "Suite 100", 
         "city": "New York",
         "state": "NY",
         "postal_code": "10001",
         "time_zone": "America/New_York",
-        "country": "USA"
-    }
+        "country": "USA", 
+        "longitude": -59.287313, 
+        "latitude": 10.566323
     }, 
     {
         "stop_id": "10293",
@@ -26,15 +26,15 @@
         "location_name": "Warehouse B", 
         "pickup_time": "2025-03-15T09:00:00Z", 
         "dropoff_time": "2025-03-15T12:00:00Z", 
-        "address": {
-            "address_line_1": "1234 Industrial St",
-            "address_line_2": "Suite 100", 
-            "city": "New York",
-            "state": "NY",
-            "postal_code": "10001",
-            "time_zone": "America/New_York",
-            "country": "USA"
-        }
+        "address_line_1": "1234 Industrial St",
+        "address_line_2": "Suite 100", 
+        "city": "New York",
+        "state": "NY",
+        "postal_code": "10001",
+        "time_zone": "America/New_York",
+        "country": "USA", 
+        "longitude": -59.287313, 
+        "latitude": 10.566323
     }, 
     {
         "stop_id": "09824",
@@ -42,15 +42,15 @@
         "location_name": "Warehouse C", 
         "pickup_time": "2025-03-15T09:00:00Z", 
         "dropoff_time": "2025-03-15T12:00:00Z", 
-        "address": {
-            "address_line_1": "1234 Industrial St",
-            "address_line_2": "Suite 100", 
-            "city": "New York",
-            "state": "NY",
-            "postal_code": "10001",
-            "time_zone": "America/New_York",
-            "country": "USA"
-        }
+        "address_line_1": "1234 Industrial St",
+        "address_line_2": "Suite 100", 
+        "city": "New York",
+        "state": "NY",
+        "postal_code": "10001",
+        "time_zone": "America/New_York",
+        "country": "USA", 
+        "longitude": -59.287313, 
+        "latitude": 10.566323
     }
     ], 
     "load_details": {
