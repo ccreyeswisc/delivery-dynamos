@@ -72,3 +72,7 @@ html, body, #map {
   background-color: #dc3545; /* Red */
 }
 
+.user-location-marker {
+  background-color: #00FF00; /* Green */
+  border: 2px solid #006400; /* Darker green border */
+}
