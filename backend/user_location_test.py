@@ -3,10 +3,10 @@ from selenium import webdriver
 import folium
 import datetime
 import time
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim # Used for obtaining address
 import geocoder
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import the CORS package
+from flask_cors import CORS  # Import the CORS package; used for tracking location
 
 app = Flask(__name__)
 CORS(app)

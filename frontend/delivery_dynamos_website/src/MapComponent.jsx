@@ -1,106 +1,158 @@
-import { useEffect } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { RouteContext } from "./context/RouteContext";
 import "./App.css";
 
 const MapComponent = ({ routes }) => {
-  useEffect(() => {
-    // Ensure TrimbleMaps is available
+  const { selectedRouteId, setSelectedRouteId } = useContext(RouteContext);
+  const [location, setLocation] = useState({ lat: null, lng: null });
+  const mapRef = useRef(null);
+  const routesRef = useRef([]);
 
-    window.TrimbleMaps.APIKey = "299354C7A83A67439273691EA750BB7F"; // Replace with actual API key
+  const sendLocationToBackend = async (lat, lng) => {
+    const data = {
+      latitude: lat,
+      longitude: lng
+    };
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/receive-user-location', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      const responseData = await response.json();
+      console.log('Response from Python backend:', responseData);
+    } catch (error) {
+      console.error('Error sending location to backend:', error);
+    }
+  };
+
+  useEffect(() => {
+
+    window.TrimbleMaps.APIKey = "299354C7A83A67439273691EA750BB7F";
 
     const map = new window.TrimbleMaps.Map({
       container: "map",
       style: window.TrimbleMaps.Common.Style.TRANSPORTATION,
-      center: [-89.5, 44.5], // Center on Wisconsin
-      zoom: 7, // Adjust zoom level
+      center: [-89.5, 44.5],
+      zoom: 7,
     });
 
-    map.on('load', () => {
-      // Convert routes data into GeoJSON format
-      const routesGeojson = {
-        type: 'FeatureCollection',
-        features: routes.flatMap(route => [
-          {
-            type: 'Feature',
-            properties: {
-              id: route.id,
-              type: 'pickup'
-            },
-            geometry: {
-              type: 'Point',
-              coordinates: [route.pickupLong, route.pickupLat]
-            }
-          },
-          {
-            type: 'Feature',
-            properties: {
-              id: route.id,
-              type: 'dropoff'
-            },
-            geometry: {
-              type: 'Point',
-              coordinates: [route.dropoffLong, route.dropoffLat]
-            }
-          }
-        ])
-      };
+    const markers = [];
+    const routesList = [];
+    mapRef.current = map;
+    routesRef.current = [];
 
-      // Add routes data source to the map
-      // map.addSource('routesSource', {
-      //   type: 'geojson',
-      //   data: routesGeojson
-      // });
+    map.on("load", () => {
+
+      if (location.lat && location.lng) {
+        const userLocationEl = document.createElement("div");
+        userLocationEl.className = "custom-marker user-location-marker"; // Custom class for user location
   
-      if (map.getSource("routesSource")) {
-        map.getSource("routesSource").setData(routesGeojson);
-      } else {
-        map.addSource("routesSource", { type: "geojson", data: routesGeojson });
+        const locationMarker = new TrimbleMaps.Marker({ element: userLocationEl })
+          .setLngLat([location.lng, location.lat])
+          .addTo(map);
+  
+        markers.push(locationMarker);
+        map.setCenter([location.lng, location.lat]);
+        map.setZoom(14); // Optionally zoom in for better visibility
       }
 
-      // Add a layer for pickup points
-      map.addLayer({
-        id: 'pickupPoints',
-        type: 'symbol',
-        source: 'routesSource',
-        layout: {
-          'icon-image': ['concat', ['get', '1'], '-fill-blue'], // e.g., "1-fill-blue"
-          'icon-size': 1.0,
-          'icon-allow-overlap': true
-        },
-        filter: ['==', ['get', 'type'], 'pickup']
-      });
+      routes.forEach((route) => {
+        const routeId = `route-${route.id}`;
 
-      // Add a layer for dropoff points
-      map.addLayer({
-        id: 'dropoffPoints',
-        type: 'symbol',
-        source: 'routesSource',
-        layout: {
-          'icon-image': ['concat', ['get', '1'], '-fill-red'], // e.g., "1-fill-red"
-          'icon-size': 1.0,
-          'icon-allow-overlap': true
-        },
-        filter: ['==', ['get', 'type'], 'dropoff']
-      });
-      routes.forEach(route => {
         const myRoute = new TrimbleMaps.Route({
-          routeId: `route-${route.id}`,
+          routeId,
           stops: [
             new TrimbleMaps.LngLat(route.pickupLong, route.pickupLat),
-            new TrimbleMaps.LngLat(route.dropoffLong, route.dropoffLat)
+            new TrimbleMaps.LngLat(route.dropoffLong, route.dropoffLat),
           ],
+          showStops: false,
+          frameRoute: false,
+          routeColor: "#808080",
         });
-        myRoute.addTo(map)
 
+        myRoute.addTo(map);
+        routesList.push(myRoute);
+        routesRef.current.push({ id: route.id, route: myRoute });
+
+        myRoute.on("click", () => {
+          console.log("route is clicked")
+          setSelectedRouteId(route.id); // Update global context
+          routesList.forEach((r) => r.update({ routeColor: "#808080" }));
+          myRoute.update({ routeColor: "#00FF00" });
+        });
+
+        // Markers
+        const pickupEl = document.createElement("div");
+        pickupEl.className = "custom-marker pickup-marker";
+
+        const dropoffEl = document.createElement("div");
+        dropoffEl.className = "custom-marker dropoff-marker";
+
+        const pickupMarker = new TrimbleMaps.Marker({ element: pickupEl })
+          .setLngLat([route.pickupLong, route.pickupLat])
+          .addTo(map);
+
+        const dropoffMarker = new TrimbleMaps.Marker({ element: dropoffEl })
+          .setLngLat([route.dropoffLong, route.dropoffLat])
+          .addTo(map);
+
+        markers.push(pickupMarker, dropoffMarker);
       });
     });
 
+    return () => {
+      markers.forEach((marker) => marker.remove());
+      if (map) map.remove();
+    };
+  }, [location, routes]);
 
 
-  }, [routes]);
+  // 🟣 Highlight selected route
+  useEffect(() => {
+    routesRef.current.forEach(({ id, route }) => {
+      const isSelected = id === selectedRouteId;
+      route.update({ routeColor: isSelected ? "#00FF00" : "#808080" });
+      if (isSelected) {
+        route.moveLayer(); 
+      }
+    });
+  }, [selectedRouteId]);
 
+  useEffect(() => {
+    if (navigator.geolocation) {
+      // Continuously watch the position
+      const watchID = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ lat: latitude, lng: longitude }); // Update React state with new location
+          sendLocationToBackend(latitude, longitude); // Send the updated location to the backend
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        },
+        {
+          enableHighAccuracy: true,  // Use GPS if available
+          maximumAge: 0,  // No caching
+          timeout: 15000   // Wait max 15 sec
+        }
+      );
 
+      // Cleanup function to stop tracking when the component unmounts
+      return () => {
+        if (watchID) {
+          navigator.geolocation.clearWatch(watchID);
+        }
+      };
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);  // Only run once on mount
 
-  return <div id="map"></div>; // Map container
+  return <div id="map" style={{ height: "100vh" }} />;
 };
 
 export default MapComponent;
