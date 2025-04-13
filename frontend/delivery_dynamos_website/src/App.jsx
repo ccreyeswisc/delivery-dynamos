@@ -14,8 +14,11 @@ function App() {
   const [apiRoutes, setApiRoutes] = useState([]);
   const [filteredRoutes, setFilteredRoutes] = useState([]);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
-  const [searchRadius, setSearchRadius] = useState(null); // in miles
-  const [searchCenter, setSearchCenter] = useState(null); // { lat, lng }
+  const [originCoordinates, setOriginCoordinatesInApp] = useState(null);
+  const [originRadius, setOriginRadiusInApp] = useState(50); // default radius
+  const [destinationCoordinates, setDestinationCoordinatesInApp] = useState(null);
+  const [destinationRadius, setDestinationRadiusInApp] = useState(50); // default radius
+
 
   // Fetch routes from API
   useEffect(() => {
@@ -183,6 +186,23 @@ function App() {
       <SearchModal 
         show={showModal} 
         handleClose={() => setShowModal(false)} 
+        setApiRoutes={setApiRoutes}  
+        setOriginCoordinatesInApp={setOriginCoordinatesInApp}
+        setOriginRadiusInApp={setOriginRadiusInApp}
+        setDestinationCoordinatesInApp={setDestinationCoordinatesInApp}
+        setDestinationRadiusInApp={setDestinationRadiusInApp}/>
+
+      {/* Pass the fetched routes to MapComponent and RouteSidebar */}
+      {apiRoutes.length > 0 && 
+      <MapComponent 
+        key={JSON.stringify(apiRoutes)} 
+        routes={apiRoutes}   
+        originCoordinates={originCoordinates}
+        originRadius={originRadius}
+        destinationCoordinates={destinationCoordinates}
+        destinationRadius={originRadius}/>}
+
+      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect} />
         setApiRoutes={handleSearchResults}
         setSearchRadius={setSearchRadius}
         setSearchCenter={setSearchCenter}

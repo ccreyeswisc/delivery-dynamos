@@ -2,12 +2,47 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { RouteContext } from "./context/RouteContext";
 import "./App.css";
 
-const MapComponent = ({ routes, radius, center }) => {
+const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoordinates, destinationRadius, radius, center }) => {
   const { selectedRouteId, setSelectedRouteId } = useContext(RouteContext);
   const [location, setLocation] = useState({ lat: null, lng: null });
   const mapRef = useRef(null);
   const routesRef = useRef([]);
 
+  const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
+    const coords = { latitude: center[1], longitude: center[0] };
+  
+    // Convert miles to kilometers
+    const radiusInKm = radiusInMiles * 1.60934;
+  
+    const km = radiusInKm;
+    const ret = [];
+    const distanceX = km / (111.32 * Math.cos((coords.latitude * Math.PI) / 180));
+    const distanceY = km / 110.574;
+    let theta, x, y;
+  
+    for (let i = 0; i < points; i++) {
+      theta = (i / points) * (2 * Math.PI);
+      x = distanceX * Math.cos(theta);
+      y = distanceY * Math.sin(theta);
+      ret.push([coords.longitude + x, coords.latitude + y]);
+    }
+  
+    ret.push(ret[0]); // close the polygon
+  
+    return {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [ret],
+          },
+        },
+      ],
+    };
+  };
+  
   const sendLocationToBackend = async (lat, lng) => {
     const data = {
       latitude: lat,
@@ -28,6 +63,7 @@ const MapComponent = ({ routes, radius, center }) => {
       console.error('Error sending location to backend:', error);
     }
   };
+
 
   useEffect(() => {
     // Ensure TrimbleMaps is available
@@ -77,6 +113,52 @@ const MapComponent = ({ routes, radius, center }) => {
     });
 
     map.on("load", () => {
+      // if (!originCoordinates || !originRadius) return;
+      if (originCoordinates && originRadius) {
+        const coordinates = [originCoordinates.lon, originCoordinates.lat]; // Madison, WI
+        const testRadius = 100;
+        console.log(originCoordinates)
+        console.log(originRadius)
+
+        const circleData = createGeoJSONCircle(coordinates, originRadius);
+        map.addSource('originCircle', {
+          type: 'geojson',
+          data: circleData,
+        });
+
+        map.addLayer({
+          id: 'originCircle',
+          type: 'fill',
+          source: 'originCircle',
+          paint: {
+            'fill-color': '#007bff',
+            'fill-opacity': 0.4,
+            'fill-outline-color': '#007bff',
+          },
+        });
+      }
+      if (destinationCoordinates && destinationRadius) {
+        const destCoordinates = [destinationCoordinates.lon, destinationCoordinates.lat]; // Madison, WI
+        const testRadius = 100;
+
+        const destinationData = createGeoJSONCircle(destCoordinates, destinationRadius);
+        map.addSource('destinationCircle', {
+          type: 'geojson',
+          data: destinationData,
+        });
+
+        map.addLayer({
+          id: 'destinationCircle',
+          type: 'fill',
+          source: 'destinationCircle',
+          paint: {
+            'fill-color': '#dc3545',
+            'fill-opacity': 0.4,
+            'fill-outline-color': '#dc3545',
+          },
+        });
+      }
+
       // Display user location if available
       if (location.lat && location.lng) {
         const userLocationEl = document.createElement("div");
@@ -262,7 +344,7 @@ const MapComponent = ({ routes, radius, center }) => {
       const isSelected = id === selectedRouteId;
       route.update({ routeColor: isSelected ? "#00FF00" : "#808080" });
       if (isSelected) {
-        route.moveLayer(); 
+        route.moveLayer();
       }
     });
   }, [selectedRouteId]);
