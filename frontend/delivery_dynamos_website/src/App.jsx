@@ -120,12 +120,12 @@ function App() {
 
   // Handle search results
   const handleSearchResults = useCallback((searchResults) => {
-    if (!searchResults || !searchResults.routes) {
-      console.error("Invalid search results", searchResults);
-      return;
-    }
+    // if (!searchResults || !searchResults.routes) {
+    //   console.error("Invalid search results", searchResults);
+    //   return;
+    // }
 
-    const formattedRoutes = searchResults.routes.map((route) => {
+    const formattedRoutes = searchResults.map((route) => {
       const firstStop = route.stops.find(stop => stop.stop_sequence === 1 || stop.stop_sequence === "1");
       const lastStop = route.stops.reduce((prev, current) =>
         prev.stop_sequence > current.stop_sequence ? prev : current
@@ -154,6 +154,8 @@ function App() {
 
     setApiRoutes(formattedRoutes);
     setFilteredRoutes(formattedRoutes);
+
+    console.log(`111 Filtered Results: ${filteredRoutes}`)
   }, []);
 
   return (
