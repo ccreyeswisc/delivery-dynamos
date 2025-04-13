@@ -5,8 +5,9 @@ import requests
 from urllib.parse import urlencode
 from json import loads
 from datetime import datetime
-
 import data_processing as dp
+from geopy.geocoders import Nominatim # Used for obtaining address
+from flask_cors import CORS  # Import the CORS package; used for tracking location
 
 app = Flask(__name__)
 CORS(app)
@@ -116,6 +117,38 @@ def search_routes():
 
     print(f'Time to run filtered search: {round((datetime.now() - start_time).total_seconds(), 3)}')
     return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
+
+@app.route('/receive-user-location', methods=['POST'])
+def receive_location():
+    data = request.get_json()  # Get JSON data from the request
+    lat = data.get('latitude')
+    lng = data.get('longitude')
+    print(data)
+    
+    if lat is not None and lng is not None:
+        geoLoc = Nominatim(user_agent="GetLoc")
+
+        latlng = str(lat) + ", " + str(lng)
+ 
+        # passing the coordinates to obtain address
+        locname = geoLoc.reverse(latlng)
+ 
+        # printing the address/location name
+        full_address = locname.address
+        print(full_address)
+
+        address_components = full_address.split(',')
+        city = address_components[-5]
+        county = address_components[-4]
+        state = address_components[-3]
+        zipcode = address_components[-2]
+        country = address_components[-1]
+
+
+        return jsonify({"message": "Location received", "latitude": lat, "longitude": lng, "city": city, "county": county, 
+                        "stat": state, "zipcode": zipcode, "country": country}), 200
+    else:
+        return jsonify({"error": "Missing latitude or longitude"}), 400
 
 # Default route
 @app.route('/')
