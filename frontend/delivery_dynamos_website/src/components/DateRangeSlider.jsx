@@ -52,8 +52,8 @@ const DateRangeSlider = ({ onFilterChange }) => {
       sx={{
         position: 'absolute',
         bottom: '30px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        left: '30px',
+        transform: 'none',
         width: '300px',
         padding: '15px',
         backgroundColor: 'white',
@@ -88,6 +88,16 @@ const DateRangeSlider = ({ onFilterChange }) => {
         min={0}
         max={30}
         disabled={showAll}
+        sx={{
+          ml: 0.5,
+          width: 'calc(100% - 8px)',
+          '& .MuiSlider-markLabel': {
+            transform: 'translateX(0%)',
+          },
+          '& .MuiSlider-markLabel[data-index="0"]': {
+            transform: 'translateX(-50%)',
+          }
+        }}
         marks={[
           { value: 0, label: 'Today' },
           { value: 7, label: '1w' },

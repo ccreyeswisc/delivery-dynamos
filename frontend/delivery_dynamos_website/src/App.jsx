@@ -14,6 +14,8 @@ function App() {
   const [apiRoutes, setApiRoutes] = useState([]);
   const [filteredRoutes, setFilteredRoutes] = useState([]);
   const [selectedRouteId, setSelectedRouteId] = useState(null);
+  const [searchRadius, setSearchRadius] = useState(null); // in miles
+  const [searchCenter, setSearchCenter] = useState(null); // { lat, lng }
 
   // Fetch routes from API
   useEffect(() => {
@@ -173,18 +175,25 @@ function App() {
           borderRadius: '50%',
         }}
       >
-        <SearchIcon style={{ fontSize: '32px' }} />
+        <SearchIcon style={{ fontSize: '32px' }} /> 
       </Button>
 
       <SearchModal 
         show={showModal} 
         handleClose={() => setShowModal(false)} 
-        setApiRoutes={handleSearchResults} 
+        setApiRoutes={handleSearchResults}
+        setSearchRadius={setSearchRadius}
+        setSearchCenter={setSearchCenter}
       />
 
       {/* Pass the filtered routes to MapComponent and RouteSidebar */}
       {filteredRoutes.length > 0 && (
-        <MapComponent routes={filteredRoutes} />
+        <MapComponent 
+          key={JSON.stringify(filteredRoutes)} 
+          routes={filteredRoutes} 
+          radius={searchRadius} 
+          center={searchCenter}
+        />
       )}
 
       <RouteSidebar 
