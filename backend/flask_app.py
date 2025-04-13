@@ -4,8 +4,10 @@ import sqlite3
 import requests
 from urllib.parse import urlencode
 from json import loads
-
+from datetime import datetime
 import data_processing as dp
+from geopy.geocoders import Nominatim # Used for obtaining address
+from flask_cors import CORS  # Import the CORS package; used for tracking location
 
 app = Flask(__name__)
 CORS(app)
@@ -20,9 +22,10 @@ region = 'na'
 apikey = '299354C7A83A67439273691EA750BB7F'
 
 # Converts an address string to coordinates
-@app.route('/api/address-to-coords', methods=['GET'])
+@app.route('/api/address-to-coords', methods=['POST'])
 def address_to_coords():
-    query = request.args.get('query')
+
+    query = loads(request.data.decode('utf8').replace("'", '"'))['query']
 
     if not query:
         return jsonify({'error': 'Missing query parameter'}), 400
@@ -40,7 +43,7 @@ def address_to_coords():
     return jsonify(obj['Locations'][0])
 
 # Gets ZIP codes within a given radius of coordinates
-@app.route('/api/radius-zips', methods=['GET'])
+@app.route('/api/radius-zips', methods=['POST'])
 def radius_zips():
     query = request.args.get('query', 'all')
     lat = request.args.get('lat')
@@ -87,15 +90,19 @@ def places_in_zip():
 
     return jsonify({'places': rows})
 
-###########################################################################
 
+#-----------------------------------------------------------------------------
 @app.route('/api/all_routes', methods=['GET'])
 def all_routes():
     routes = dp.all_routes()
     return jsonify({'routes' : routes.to_dict(orient="records")})
 
+#-----------------------------------------------------------------------------
 @app.route('/api/search_routes', methods=['POST'])
 def search_routes():
+    
+    start_time = datetime.now()
+
     data = loads(request.data.decode('utf8').replace("'", '"'))
     start_location = data['start_location']
     start_radius = data['start_radius']
@@ -106,10 +113,42 @@ def search_routes():
     end_pickup_time = data['end_pickup_time']
     end_dropoff_time = data['end_dropoff_time']
 
-    # print(data)
-
     filtered_routes = dp.search_routes(start_location, start_radius, start_pickup_time, start_dropoff_time, end_location, end_radius, end_pickup_time, end_dropoff_time)
+
+    print(f'Time to run filtered search: {round((datetime.now() - start_time).total_seconds(), 3)}')
     return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
+
+@app.route('/receive-user-location', methods=['POST'])
+def receive_location():
+    data = request.get_json()  # Get JSON data from the request
+    lat = data.get('latitude')
+    lng = data.get('longitude')
+    print(data)
+    
+    if lat is not None and lng is not None:
+        geoLoc = Nominatim(user_agent="GetLoc")
+
+        latlng = str(lat) + ", " + str(lng)
+ 
+        # passing the coordinates to obtain address
+        locname = geoLoc.reverse(latlng)
+ 
+        # printing the address/location name
+        full_address = locname.address
+        print(full_address)
+
+        address_components = full_address.split(',')
+        city = address_components[-5]
+        county = address_components[-4]
+        state = address_components[-3]
+        zipcode = address_components[-2]
+        country = address_components[-1]
+
+
+        return jsonify({"message": "Location received", "latitude": lat, "longitude": lng, "city": city, "county": county, 
+                        "stat": state, "zipcode": zipcode, "country": country}), 200
+    else:
+        return jsonify({"error": "Missing latitude or longitude"}), 400
 
 # Default route
 @app.route('/')

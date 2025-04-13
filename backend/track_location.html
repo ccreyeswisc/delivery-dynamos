@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Location Tracking</title>
+</head>
+<body>
+    <h1>Live User Location</h1>
+    <button onclick="startTracking()">Start Tracking</button>
+    <button onclick="stopTracking()">Stop Tracking</button>
+    <p id="location"></p>
+
+    <script>
+        let watchID;
+
+        function startTracking() {
+            if (navigator.geolocation) {
+                // this updates the location 
+                watchID = navigator.geolocation.watchPosition(showPosition, handleError, {
+                    enableHighAccuracy: true,  // Use GPS if available
+                    maximumAge: 0,  // No caching
+                    timeout: 15000   // Wait max 15 sec
+                });
+            } else {
+                document.getElementById("location").innerText = "Geolocation is not supported.";
+            }
+        }
+
+        function showPosition(position) {
+            let lat = position.coords.latitude;
+            let lng = position.coords.longitude;
+            let accuracy = position.coords.accuracy; // Accuracy in meters
+
+            document.getElementById("location").innerText = `Latitude: ${lat}, Longitude: ${lng}, Accuracy: ${accuracy}m`;
+            console.log(`Latitude: ${lat}, Longitude: ${lng}, Accuracy: ${accuracy}m`);
+
+            sendLocationToBackend(lat, lng);
+        }
+
+        function stopTracking() {
+            if (watchID) {
+                navigator.geolocation.clearWatch(watchID);
+                alert("Tracking stopped.");
+            }
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+
+        function handleError(error) {
+            if (error.code === error.TIMEOUT) {
+                console.warn("Timeout occurred, retrying...");
+                getLocation(); // Retry the request
+            } else {
+                console.error("Geolocation error:", error);
+            }
+        }
+
+        function sendLocationToBackend(lat, lng) {
+            // Create the data object to send
+                const data = {
+                latitude: lat,
+                longitude: lng
+            };
+
+            // Make the POST request to the Flask server
+            fetch('http://127.0.0.1:5000/receive-location', {
+                method: 'POST',          // HTTP Method
+                headers: {
+                    'Content-Type': 'application/json' // Set content type to JSON
+                },
+                body: JSON.stringify(data) // Send the coordinates as JSON
+            })
+            .then(response => response.json())  // Parse the response as JSON
+            .then(data => {
+                console.log('Response from Python backend:', data);
+            })
+            .catch(error => {
+                console.error('Error sending location to backend:', error);
+            });
+        }
+    </script>
+</body>
+</html>

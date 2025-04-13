@@ -46,8 +46,10 @@ def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
         'Authorization': f'{apikey}',
         'Content-type': 'application/json'
     }
+
     response = requests.get(url, headers=headers, params=urlencode(params), timeout=10)
     obj = response.json()
+    
     zip_codes = [x['POILocation']['Address']['Zip'][0:5] for x in obj]
 
     return list(set(zip_codes))

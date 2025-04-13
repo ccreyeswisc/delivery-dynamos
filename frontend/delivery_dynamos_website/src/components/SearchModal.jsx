@@ -56,8 +56,34 @@ const SearchModal = ({ show, handleClose, setApiRoutes }) => {
     setFilteredCities([]);
   };
 
+  const getCoordinates = async (cityName) => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/address-to-coords', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: cityName }),
+      });
+
+      if (!response.ok) throw new Error(`Failed to fetch coordinates for ${cityName}`);
+
+      const data = await response.json();
+      console.log(`Coordinates for ${cityName}:`, data);
+      return data;
+    } catch (err) {
+      console.error(err.message);
+      return null;
+    }
+  };
+
+
   const handleConfirm = async () => {
     setLoading(true);
+
+    const originCoords = await getCoordinates(origin);
+    const destinationCoords = await getCoordinates(destination);
+
+    console.log("Origin Coords:", originCoords);
+    console.log("Destination Coords:", destinationCoords);
 
     const requestBody = {
       start_location: origin,
