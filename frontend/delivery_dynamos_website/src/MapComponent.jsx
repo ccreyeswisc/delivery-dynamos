@@ -113,10 +113,8 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
     });
 
     map.on("load", () => {
-      // if (!originCoordinates || !originRadius) return;
       if (originCoordinates && originRadius) {
         const coordinates = [originCoordinates.lon, originCoordinates.lat]; // Madison, WI
-        const testRadius = 100;
         console.log(originCoordinates)
         console.log(originRadius)
 
@@ -139,7 +137,6 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
       }
       if (destinationCoordinates && destinationRadius) {
         const destCoordinates = [destinationCoordinates.lon, destinationCoordinates.lat]; // Madison, WI
-        const testRadius = 100;
 
         const destinationData = createGeoJSONCircle(destCoordinates, destinationRadius);
         map.addSource('destinationCircle', {

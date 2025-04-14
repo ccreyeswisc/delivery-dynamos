@@ -200,7 +200,7 @@ function App() {
         originCoordinates={originCoordinates}
         originRadius={originRadius}
         destinationCoordinates={destinationCoordinates}
-        destinationRadius={originRadius}/>}
+        destinationRadius={destinationRadius}/>}
 
       <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect}
         setApiRoutes={handleSearchResults}
