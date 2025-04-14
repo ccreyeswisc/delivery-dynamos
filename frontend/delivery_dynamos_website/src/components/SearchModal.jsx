@@ -7,13 +7,15 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { City } from 'country-state-city';
 
-const SearchModal = ({ show, handleClose, setApiRoutes }) => {
+const SearchModal = ({ show, handleClose, setApiRoutes, setOriginCoordinatesInApp, setOriginRadiusInApp, setDestinationCoordinatesInApp, setDestinationRadiusInApp}) => {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [originRadius, setOriginRadius] = useState(50);
   const [destinationRadius, setDestinationRadius] = useState(50);
   const [originDateFrom, setOriginDateFrom] = useState(null);
   const [originDateTo, setOriginDateTo] = useState(null);
+  const [originCoordinates, setOriginCoordinates] = useState(null);
+  const [destinationCoordinates, setDestinationCoordinates] = useState(null);
   const [destinationDateFrom, setDestinationDateFrom] = useState(null);
   const [destinationDateTo, setDestinationDateTo] = useState(null);
   const [cityOptions, setCityOptions] = useState([]);
@@ -61,14 +63,15 @@ const SearchModal = ({ show, handleClose, setApiRoutes }) => {
       const response = await fetch('http://127.0.0.1:5000/api/address-to-coords', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: cityName }),
+        body: JSON.stringify({ query: cityName }),
       });
 
       if (!response.ok) throw new Error(`Failed to fetch coordinates for ${cityName}`);
 
       const data = await response.json();
-      console.log(`Coordinates for ${cityName}:`, data);
-      return data;
+      return data?.Coords ? { lat: Number(data.Coords.Lat), lon: Number(data.Coords.Lon) } : null;
+      // console.log(`Coordinates for ${cityName}:`, data);
+      // return data;
     } catch (err) {
       console.error(err.message);
       return null;
@@ -81,9 +84,15 @@ const SearchModal = ({ show, handleClose, setApiRoutes }) => {
 
     const originCoords = await getCoordinates(origin);
     const destinationCoords = await getCoordinates(destination);
-
-    console.log("Origin Coords:", originCoords);
-    console.log("Destination Coords:", destinationCoords);
+  
+    setOriginCoordinatesInApp(originCoords);
+    setOriginRadiusInApp(originRadius);
+    setDestinationCoordinatesInApp(destinationCoords);
+    setDestinationRadiusInApp(destinationRadius);
+    
+    console.log("Origin Coordinates:", originCoords);
+    console.log("Destination Coordinates:", destinationCoords);
+    
 
     const requestBody = {
       start_location: origin,

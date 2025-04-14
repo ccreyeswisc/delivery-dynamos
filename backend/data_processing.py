@@ -40,11 +40,6 @@ def format_routes(df: pd.DataFrame) -> None:
     for i in range(len(df)):
         df.at[i, 'cost'] = "{:.2f}".format(round(random.random() * 1000, 2))
 
-def save_all_routes() -> None:
-
-    # routes.to_json('./all_routes.json')
-    pass
-
 # GET Request for Flask API
 def all_routes() -> pd.DataFrame:
 
@@ -87,18 +82,11 @@ async def get_end_info(end_location, end_radius):
     return end_zips
 
 # POST Request for Flask API
-# TODO: Test out date filters and date formatting against frontend date format
-def search_routes(start_location: str = None, start_radius: str = None, start_pickup_time: str = None, start_dropoff_time: str = None, end_location: str = None, end_radius: str = None, end_pickup_time: str = None, end_dropoff_time: str = None) -> pd.DataFrame:
+def search_routes(start_location: str = None, start_radius: str = None, start_pickup_datetime_threshold: str = None, start_dropoff_datetime_threshold: str = None, end_location: str = None, end_radius: str = None, end_pickup_datetime_threshold: str = None, end_dropoff_datetime_threshold: str = None) -> pd.DataFrame:
     
-    start_time = datetime.now()
+    # debug_start_time = datetime.now()
     unfiltered_routes = cached_routes if isinstance(cached_routes, pd.DataFrame) else all_routes()
-    print(f'Time to grab all routes: {round((datetime.now() - start_time).total_seconds(), 3)}')
-
-    # Remove time filters for now, TODO: add back in
-    start_pickup_time = None
-    start_dropoff_time = None
-    end_pickup_time = None
-    end_dropoff_time = None
+    # print(f'Time to grab all routes: {round((datetime.now() - debug_start_time).total_seconds(), 3)}')
 
     async def resolve_zip_codes():
         tasks = []
@@ -114,12 +102,43 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
 
         return await asyncio.gather(*tasks)
 
-    start_time = datetime.now()
+    # debug_start_time = datetime.now()
     start_zips, end_zips = asyncio.run(resolve_zip_codes())
-    print(f'Time to grab start and end zips: {round((datetime.now() - start_time).total_seconds(), 3)}')
+    # print(f'Time to grab start and end zips: {round((datetime.now() - debug_start_time).total_seconds(), 3)}')
 
     # empty dataframe to fill with filtered routes
     filtered_routes = unfiltered_routes.iloc[0:0].copy()
+
+    def check_dates(start: pd.Series, end: pd.Series, start_pickup_datetime_threshold: str = None, start_dropoff_datetime_threshold: str = None, end_pickup_datetime_threshold: str = None, end_dropoff_datetime_threshold: str = None) -> bool:
+        
+        format_routes = lambda x: datetime.strptime(x[:26], "%Y-%m-%dT%H:%M:%S.%f")
+
+        start_pickup_time = format_routes(start['pickup_time'])
+        start_dropoff_time = format_routes(start['dropoff_time'])
+        end_pickup_time = format_routes(end['pickup_time'])
+        end_dropoff_time = format_routes(end['dropoff_time'])
+
+        start_pickup_time_check = False
+        start_dropoff_time_check = False
+        end_pickup_time_check = False
+        end_dropoff_time_check = False
+
+        if start_pickup_datetime_threshold is None or start_pickup_datetime_threshold < start_pickup_time:
+            start_pickup_time_check = True
+
+        # print(start_dropoff_datetime_threshold, start_dropoff_time, start_dropoff_datetime_threshold - start_dropoff_time)
+        if start_dropoff_datetime_threshold is None or start_dropoff_datetime_threshold > start_dropoff_time:
+            start_dropoff_time_check = True
+
+        # print(end_pickup_datetime_threshold, end_pickup_time, end_pickup_time - end_pickup_datetime_threshold)
+        if end_pickup_datetime_threshold is None or end_pickup_datetime_threshold < end_pickup_time:
+            end_pickup_time_check = True
+
+        if end_dropoff_datetime_threshold is None or end_dropoff_datetime_threshold > end_dropoff_time:
+            end_dropoff_time_check = True
+
+        # print(start_pickup_time_check, start_dropoff_time_check, end_pickup_time_check, end_dropoff_time_check)
+        return start_pickup_time_check and start_dropoff_time_check and end_pickup_time_check and end_dropoff_time_check
 
     for index, row in tqdm(unfiltered_routes.iterrows(), total=len(unfiltered_routes), desc='Filtering Routes'):
 
@@ -127,52 +146,16 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
         stops = row['stops']
         start, end = stops[0], stops[-1]
 
-        # Standardize datetime formats from PC Miler and User Input
-        routes_datetime_format = "%Y-%m-%dT%H:%M:%S.%f"
-        input_datetime_format = "%M-%dT-%Y" # TODO: Fix if necessary
-
-        if start_pickup_time and start_dropoff_time:
-            start_route_datetime = datetime.strptime(start['pickup_time'][:-7], routes_datetime_format)
-            start_pickup_datetime = datetime.strptime(start_pickup_time, input_datetime_format)
-            start_dropoff_datetime = datetime.strptime(start_dropoff_time, input_datetime_format)
-            valid_start_time = start_pickup_datetime <= start_route_datetime <= start_dropoff_datetime
-        else:
-            valid_start_time = None
-
-        if end_pickup_time and end_dropoff_time:
-            end_route_datetime = datetime.strptime(end['dropoff_time'][:-7], routes_datetime_format)
-            end_pickup_datetime = datetime.strptime(end_pickup_time, input_datetime_format)
-            end_dropoff_datetime = datetime.strptime(end_dropoff_time, input_datetime_format)
-            valid_end_time = end_pickup_datetime <= end_route_datetime <= end_dropoff_datetime
-        else:
-            valid_end_time = None
-
-        # Filter pickup locations
-        verbose = False
-
         start_postal_code = start['postal_code'][0:5]
-        if start_zips and start_postal_code not in start_zips:
-            if verbose:
-                print(f'Filtered out start postal code {start_postal_code}')
-            continue
-
-        # Filter pickup day
-        if valid_start_time is not None and valid_start_time:
-            if verbose:
-                print(f'Filtered out time that was not within the start pickup time.')
-            continue
-
-        # Filter dropoff locations
         end_postal_code = end['postal_code'][0:5]
+
+        if start_zips and start_postal_code not in start_zips:
+            continue
+        
         if end_zips and end_postal_code not in end_zips:
-            if verbose:
-                print(f'Filtered out end postal code {end_postal_code}')
             continue
 
-        # Filter dropoff day
-        if valid_end_time is not None and valid_end_time:
-            if verbose:
-                print('Filtered out time that was not within the end pickup time.')
+        if not check_dates(start, end, start_pickup_datetime_threshold, start_dropoff_datetime_threshold, end_pickup_datetime_threshold, end_dropoff_datetime_threshold):
             continue
 
         filtered_routes.loc[len(filtered_routes)] = row

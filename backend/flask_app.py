@@ -22,6 +22,7 @@ def get_db_connection():
 region = 'na'
 apikey = '299354C7A83A67439273691EA750BB7F'
 
+# -----------------------------------------------------------------------------
 # Converts an address string to coordinates
 @app.route('/api/address-to-coords', methods=['POST'])
 def address_to_coords():
@@ -43,6 +44,7 @@ def address_to_coords():
     obj = response.json()
     return jsonify(obj['Locations'][0])
 
+# -----------------------------------------------------------------------------
 # Gets ZIP codes within a given radius of coordinates
 @app.route('/api/radius-zips', methods=['POST'])
 def radius_zips():
@@ -68,6 +70,7 @@ def radius_zips():
 
     return jsonify({'zip_codes': zip_codes})
 
+# -----------------------------------------------------------------------------
 # Finds places in the database matching given ZIP codes
 @app.route('/api/places-in-zip', methods=['POST'])
 def places_in_zip():
@@ -92,13 +95,13 @@ def places_in_zip():
     return jsonify({'places': rows})
 
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 @app.route('/api/all_routes', methods=['GET'])
 def all_routes():
     routes = dp.all_routes()
     return jsonify({'routes' : routes.to_dict(orient="records")})
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 @app.route('/api/search_routes', methods=['POST'])
 def search_routes():
     
@@ -114,11 +117,20 @@ def search_routes():
     end_pickup_time = data['end_pickup_time']
     end_dropoff_time = data['end_dropoff_time']
 
+    # format dates correctly
+    format_dates = lambda x: datetime.strptime(x.replace('Z', ''), "%Y-%m-%dT%H:%M:%S.%f")
+
+    start_pickup_time = format_dates(start_pickup_time) if start_pickup_time else None
+    start_dropoff_time = format_dates(start_dropoff_time) if start_dropoff_time else None
+    end_pickup_time = format_dates(end_pickup_time) if end_pickup_time else None
+    end_dropoff_time = format_dates(end_dropoff_time) if end_dropoff_time else None
+
     filtered_routes = dp.search_routes(start_location, start_radius, start_pickup_time, start_dropoff_time, end_location, end_radius, end_pickup_time, end_dropoff_time)
 
     print(f'Time to run filtered search: {round((datetime.now() - start_time).total_seconds(), 3)}')
     return jsonify({'routes' : filtered_routes.to_dict(orient='records')})
 
+# -----------------------------------------------------------------------------
 @app.route('/receive-user-location', methods=['POST'])
 def receive_location():
     try:
