@@ -7,10 +7,11 @@ from json import loads
 from datetime import datetime
 import data_processing as dp
 from geopy.geocoders import Nominatim # Used for obtaining address
+from geopy.exc import GeocoderTimedOut
 from flask_cors import CORS  # Import the CORS package; used for tracking location
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:5173"])
 
 # Database connection function
 def get_db_connection():
@@ -120,35 +121,56 @@ def search_routes():
 
 @app.route('/receive-user-location', methods=['POST'])
 def receive_location():
-    data = request.get_json()  # Get JSON data from the request
-    lat = data.get('latitude')
-    lng = data.get('longitude')
-    print(data)
+    try:
+        data = request.get_json()  # Get JSON data from the request
+        lat = data.get('latitude')
+        lng = data.get('longitude')
+        print(data)
+        print(f"Received lat: {lat}, lng: {lng}")
+        
+        if lat is not None and lng is not None:
+            geoLoc = Nominatim(user_agent="GetLoc", timeout=10)
+
+            # Retry logic on timeout
+            def reverse_geocode_with_retry(geoLoc, latlng, retries=3):
+                for attempt in range(retries):
+                    try:
+                        return geoLoc.reverse(latlng)
+                    except GeocoderTimedOut:
+                        print(f"⚠️ Timeout, retrying... ({attempt + 1}/{retries})")
+                        continue
+                return None
+
+            latlng = f"{lat}, {lng}"
+            locname = reverse_geocode_with_retry(geoLoc, latlng)
+
+            if not locname:
+                return jsonify({"error": "Geocoding timed out after retries"}), 504
+
+            # latlng = str(lat) + ", " + str(lng)
     
-    if lat is not None and lng is not None:
-        geoLoc = Nominatim(user_agent="GetLoc")
+            # # passing the coordinates to obtain address
+            # locname = geoLoc.reverse(latlng)
+    
+            # printing the address/location name
+            full_address = locname.address
+            print(full_address)
 
-        latlng = str(lat) + ", " + str(lng)
- 
-        # passing the coordinates to obtain address
-        locname = geoLoc.reverse(latlng)
- 
-        # printing the address/location name
-        full_address = locname.address
-        print(full_address)
-
-        address_components = full_address.split(',')
-        city = address_components[-5]
-        county = address_components[-4]
-        state = address_components[-3]
-        zipcode = address_components[-2]
-        country = address_components[-1]
+            address_components = full_address.split(',')
+            city = address_components[-5]
+            county = address_components[-4]
+            state = address_components[-3]
+            zipcode = address_components[-2]
+            country = address_components[-1]
 
 
-        return jsonify({"message": "Location received", "latitude": lat, "longitude": lng, "city": city, "county": county, 
-                        "stat": state, "zipcode": zipcode, "country": country}), 200
-    else:
-        return jsonify({"error": "Missing latitude or longitude"}), 400
+            return jsonify({"message": "Location received", "latitude": lat, "longitude": lng, "city": city, "county": county, 
+                            "stat": state, "zipcode": zipcode, "country": country}), 200
+        else:
+            return jsonify({"error": "Missing latitude or longitude"}), 400
+    except Exception as e:
+        print("Error in /receive-user-location:", str(e))
+        return jsonify({"error": str(e)}), 500
 
 # Default route
 @app.route('/')
