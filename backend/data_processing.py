@@ -40,11 +40,6 @@ def format_routes(df: pd.DataFrame) -> None:
     for i in range(len(df)):
         df.at[i, 'cost'] = "{:.2f}".format(round(random.random() * 1000, 2))
 
-def save_all_routes() -> None:
-
-    # routes.to_json('./all_routes.json')
-    pass
-
 # GET Request for Flask API
 def all_routes() -> pd.DataFrame:
 
@@ -87,7 +82,6 @@ async def get_end_info(end_location, end_radius):
     return end_zips
 
 # POST Request for Flask API
-# TODO: Test out date filters and date formatting against frontend date format
 def search_routes(start_location: str = None, start_radius: str = None, start_pickup_datetime_threshold: str = None, start_dropoff_datetime_threshold: str = None, end_location: str = None, end_radius: str = None, end_pickup_datetime_threshold: str = None, end_dropoff_datetime_threshold: str = None) -> pd.DataFrame:
     
     # debug_start_time = datetime.now()
@@ -132,15 +126,18 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
         if start_pickup_datetime_threshold is None or start_pickup_datetime_threshold < start_pickup_time:
             start_pickup_time_check = True
 
+        # print(start_dropoff_datetime_threshold, start_dropoff_time, start_dropoff_datetime_threshold - start_dropoff_time)
         if start_dropoff_datetime_threshold is None or start_dropoff_datetime_threshold > start_dropoff_time:
             start_dropoff_time_check = True
 
+        # print(end_pickup_datetime_threshold, end_pickup_time, end_pickup_time - end_pickup_datetime_threshold)
         if end_pickup_datetime_threshold is None or end_pickup_datetime_threshold < end_pickup_time:
             end_pickup_time_check = True
 
         if end_dropoff_datetime_threshold is None or end_dropoff_datetime_threshold > end_dropoff_time:
             end_dropoff_time_check = True
 
+        # print(start_pickup_time_check, start_dropoff_time_check, end_pickup_time_check, end_dropoff_time_check)
         return start_pickup_time_check and start_dropoff_time_check and end_pickup_time_check and end_dropoff_time_check
 
     for index, row in tqdm(unfiltered_routes.iterrows(), total=len(unfiltered_routes), desc='Filtering Routes'):
@@ -158,7 +155,7 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
         if end_zips and end_postal_code not in end_zips:
             continue
 
-        if not check_dates(start, end, start_pickup_datetime_threshold, start_dropoff_datetime_threshold, end_dropoff_datetime_threshold, end_dropoff_datetime_threshold):
+        if not check_dates(start, end, start_pickup_datetime_threshold, start_dropoff_datetime_threshold, end_pickup_datetime_threshold, end_dropoff_datetime_threshold):
             continue
 
         filtered_routes.loc[len(filtered_routes)] = row
