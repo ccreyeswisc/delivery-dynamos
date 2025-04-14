@@ -324,7 +324,7 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         {
           enableHighAccuracy: true,  // Use GPS if available
           maximumAge: 0,  // No caching
-          timeout: 15000   // Wait max 15 sec
+          timeout: 30000   // Wait max 15 sec
         }
       );
 
