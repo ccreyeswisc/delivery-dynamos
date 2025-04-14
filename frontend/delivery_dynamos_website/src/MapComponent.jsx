@@ -305,7 +305,7 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         mapRef.current.remove();
       }
     };
-  }, [location, routes, radius, center, selectedRouteId]);
+  }, [routes, location]);
 
   // Track user location
   useEffect(() => {

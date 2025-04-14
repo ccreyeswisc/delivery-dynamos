@@ -193,7 +193,7 @@ function App() {
         setDestinationRadiusInApp={setDestinationRadiusInApp}/>
 
       {/* Pass the fetched routes to MapComponent and RouteSidebar */}
-      {apiRoutes.length > 0 && 
+      {filteredRoutes.length > 0 && 
       <MapComponent 
         key={JSON.stringify(apiRoutes)} 
         routes={apiRoutes}   
@@ -202,14 +202,12 @@ function App() {
         destinationCoordinates={destinationCoordinates}
         destinationRadius={originRadius}/>}
 
-      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect} />
+      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect}
         setApiRoutes={handleSearchResults}
-        setSearchRadius={setSearchRadius}
-        setSearchCenter={setSearchCenter}
       />
 
       {/* Pass the filtered routes to MapComponent and RouteSidebar */}
-      {filteredRoutes.length > 0 && (
+      {/* {filteredRoutes.length > 0 && (
         <MapComponent 
           key={JSON.stringify(filteredRoutes)} 
           routes={filteredRoutes} 
@@ -221,7 +219,7 @@ function App() {
       <RouteSidebar 
         routes={filteredRoutes} 
         onRouteSelect={handleRouteSelect} 
-      />
+      /> */}
 
       {/* Date Range Slider */}
       {apiRoutes.length > 0 && (
