@@ -1,4 +1,5 @@
 # ----------------- Main ------------------------
+/venv/*
 
 # --------------- Frontend ----------------------
 /frontend/delivery_dynamos_website/node_modules/*
@@ -6,6 +7,7 @@
 /frontend/delivery_dynamos_website/node_modules/.vite/deps/bootstrap.js
 
 # --------------- Backend -----------------------
+/backend/.env
 /backend/__pycache__/*
 /backend/__pycache__/pc_miler_api.cpython-312.pyc
 /backend/__pycache__/data_processing.cpython-312.pyc

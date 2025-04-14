@@ -9,6 +9,8 @@ import SearchModal from './components/SearchModal';
 import SearchIcon from '@mui/icons-material/Search';
 import DateRangeSlider from './components/DateRangeSlider';
 
+require('dotenv').config();
+
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [apiRoutes, setApiRoutes] = useState([]);

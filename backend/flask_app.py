@@ -9,8 +9,13 @@ import data_processing as dp
 from geopy.geocoders import Nominatim # Used for obtaining address
 from flask_cors import CORS  # Import the CORS package; used for tracking location
 
+from dotenv import load_dotenv
+from os import getenv
+
 app = Flask(__name__)
 CORS(app)
+
+load_dotenv()
 
 # Database connection function
 def get_db_connection():
@@ -19,7 +24,7 @@ def get_db_connection():
     return con
 
 region = 'na'
-apikey = '299354C7A83A67439273691EA750BB7F'
+apikey = getenv('PC_MILER_API_KEY')
 
 # -----------------------------------------------------------------------------
 # Converts an address string to coordinates
