@@ -67,7 +67,7 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
 
   useEffect(() => {
     // Ensure TrimbleMaps is available
-    window.TrimbleMaps.APIKey = process.env.PC_MILER_API_KEY;
+    window.TrimbleMaps.APIKey = import.meta.env.VITE_PC_MILER_API_KEY;
 
     const map = new window.TrimbleMaps.Map({
       container: "map",
