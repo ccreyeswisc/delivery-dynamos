@@ -154,7 +154,7 @@ def receive_location():
                     try:
                         return geoLoc.reverse(latlng)
                     except GeocoderTimedOut:
-                        print(f"⚠️ Timeout, retrying... ({attempt + 1}/{retries})")
+                        print(f"Timeout, retrying... ({attempt + 1}/{retries})")
                         continue
                 return None
 
