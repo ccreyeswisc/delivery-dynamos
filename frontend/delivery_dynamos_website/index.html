@@ -85,16 +85,22 @@
         };
 
         // Make the POST request to the Flask server
-        fetch('http://127.0.0.1:5000/receive-user-location', {
-            method: 'POST',          // HTTP Method
+        fetch('/receive-user-location', {
+            method: 'POST',          
             headers: {
-                'Content-Type': 'application/json' // Set content type to JSON
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data) // Send the coordinates as JSON
         })
-        .then(response => response.json())  // Parse the response as JSON
-        .then(data => {
-            console.log('Response from Python backend:', data);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(text => {
+            const parsedData = text ? JSON.parse(text) : {};
+            console.log('Response from Python backend:', parsedData);
         })
         .catch(error => {
             console.error('Error sending location to backend:', error);

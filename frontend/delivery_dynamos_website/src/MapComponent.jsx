@@ -50,13 +50,17 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/receive-user-location', {
+      const response = await fetch('/receive-user-location', {
         method: 'POST',
+        // mode: 'cors',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(data)
       });
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const responseData = await response.json();
       console.log('Response from Python backend:', responseData);
     } catch (error) {
@@ -320,7 +324,7 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         {
           enableHighAccuracy: true,  // Use GPS if available
           maximumAge: 0,  // No caching
-          timeout: 15000   // Wait max 15 sec
+          timeout: 30000   // Wait max 15 sec
         }
       );
 
