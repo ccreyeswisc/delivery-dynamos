@@ -1,14 +1,17 @@
 import sqlite3
-
 import requests
 from urllib.parse import urlencode
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv()
 
 con = sqlite3.connect('./routes.db')
 con.row_factory = sqlite3.Row
 cur = con.cursor()
 
 region = 'na'
-apikey = '299354C7A83A67439273691EA750BB7F'
+apikey = getenv('PC_MILER_API_KEY')
 
 # Finds the coordinates of a string search of (City, State)
 def address_to_coords(query: str) -> dict:
