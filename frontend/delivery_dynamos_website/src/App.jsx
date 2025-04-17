@@ -18,7 +18,10 @@ function App() {
   const [originRadius, setOriginRadiusInApp] = useState(50); // default radius
   const [destinationCoordinates, setDestinationCoordinatesInApp] = useState(null);
   const [destinationRadius, setDestinationRadiusInApp] = useState(50); // default radius
-
+  
+  // Add new state for date range from search
+  const [originDateFrom, setOriginDateFrom] = useState(null);
+  const [originDateTo, setOriginDateTo] = useState(null);
 
   // Fetch routes from API
   useEffect(() => {
@@ -74,18 +77,19 @@ function App() {
     
     console.log(`Filtering for routes up to ${daysFromNow} days from now`);
     
-    // If daysFromNow is -1, show all routes (special value)
+    // If daysFromNow is -1, show all routes
     if (daysFromNow === -1) {
       console.log("Showing all routes");
       setFilteredRoutes(apiRoutes);
       return;
     }
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time portion
+    // Use originDateFrom as the base date if available, otherwise use today
+    const baseDate = originDateFrom ? new Date(originDateFrom) : new Date();
+    baseDate.setHours(0, 0, 0, 0); // Reset time portion for fair comparison
     
-    // Debug logs (limited to reduce console spam)
-    console.log("Today's date:", today);
+    // Debug logs
+    console.log("Base date for filtering:", baseDate);
     console.log("Total routes before filtering:", apiRoutes.length);
     
     const filtered = apiRoutes.filter(route => {
@@ -98,67 +102,42 @@ function App() {
       const pickupDate = new Date(route.pickupDate);
       pickupDate.setHours(0, 0, 0, 0); // Reset time portion for fair comparison
       
-      // For routes in the future
-      if (pickupDate >= today) {
+      // For routes after or on the base date
+      if (pickupDate >= baseDate) {
         // Calculate days difference
-        const diffTime = pickupDate - today;
+        const diffTime = pickupDate - baseDate;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
         // Show routes that are within the selected number of days
         return diffDays <= daysFromNow;
       }
       
-      // Include past routes if needed - adjust this logic based on your requirements
+      // Exclude routes before the base date
       return false;
     });
     
     console.log("Routes after filtering:", filtered.length);
     setFilteredRoutes(filtered);
-  }, [apiRoutes]); // Only recreate this function when apiRoutes changes
+  }, [apiRoutes, originDateFrom]); // Add originDateFrom to dependencies
 
   const handleRouteSelect = useCallback((routeId) => {
     setSelectedRouteId(routeId);
     console.log(`Route ${routeId} selected`);
   }, []);
 
-  // Handle search results
-  const handleSearchResults = useCallback((searchResults) => {
-    // if (!searchResults || !searchResults.routes) {
-    //   console.error("Invalid search results", searchResults);
-    //   return;
-    // }
-
-    const formattedRoutes = searchResults.map((route) => {
-      const firstStop = route.stops.find(stop => stop.stop_sequence === 1 || stop.stop_sequence === "1");
-      const lastStop = route.stops.reduce((prev, current) =>
-        prev.stop_sequence > current.stop_sequence ? prev : current
-      );
-      
-      return {
-        id: route.load_id,
-        pickup: firstStop ? `${firstStop.city}, ${firstStop.state}` : 'Unknown',
-        dropoff: lastStop ? `${lastStop.city}, ${lastStop.state}` : 'Unknown',
-        pickupLong: firstStop ? Number(firstStop.longitude) : null,
-        pickupLat: firstStop ? Number(firstStop.latitude) : null,
-        dropoffLong: lastStop ? Number(lastStop.longitude) : null,
-        dropoffLat: lastStop ? Number(lastStop.latitude) : null,
-        day: firstStop.pickup_time ? new Date(firstStop.pickup_time).toLocaleDateString('en-US', { weekday: 'long' }) : 'Unknown',
-        date: firstStop.pickup_time ? new Date(firstStop.pickup_time).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) : 'Unknown',
-        time: firstStop.pickup_time && lastStop.dropoff_time
-          ? `${new Date(firstStop.pickup_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - ${new Date(lastStop.dropoff_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
-          : 'Unknown',
-        duration: route.total_distance ? `${Math.ceil(route.total_distance / 60)} hrs` : 'N/A',
-        distance: route.total_distance ? `${route.total_distance} mi` : 'N/A',
-        pay: route.cost ? `$${route.cost}` : 'N/A',
-        stops: route.stops,
-        pickupDate: firstStop.pickup_time ? new Date(firstStop.pickup_time) : null
-      };
-    });
-
+  // Custom handler to receive dates from SearchModal
+  const handleSearchComplete = useCallback((formattedRoutes, searchDates) => {
+    // Store date information if available
+    if (searchDates) {
+      setOriginDateFrom(searchDates.originDateFrom);
+      setOriginDateTo(searchDates.originDateTo);
+    }
+    
+    // Update routes with search results
     setApiRoutes(formattedRoutes);
     setFilteredRoutes(formattedRoutes);
-
-    console.log(`111 Filtered Results: ${filteredRoutes}`)
+    
+    console.log(`Updated Results: ${formattedRoutes.length} routes found`);
   }, []);
 
   return (
@@ -186,44 +165,35 @@ function App() {
       <SearchModal 
         show={showModal} 
         handleClose={() => setShowModal(false)} 
-        setApiRoutes={setApiRoutes}  
+        setApiRoutes={handleSearchComplete}  
         setOriginCoordinatesInApp={setOriginCoordinatesInApp}
         setOriginRadiusInApp={setOriginRadiusInApp}
         setDestinationCoordinatesInApp={setDestinationCoordinatesInApp}
         setDestinationRadiusInApp={setDestinationRadiusInApp}/>
 
-      {/* Pass the fetched routes to MapComponent and RouteSidebar */}
+      {/* Pass the fetched routes to MapComponent */}
       {filteredRoutes.length > 0 && 
       <MapComponent 
-        key={JSON.stringify(apiRoutes)} 
-        routes={apiRoutes}   
+        key={JSON.stringify(filteredRoutes)} 
+        routes={filteredRoutes}   
         originCoordinates={originCoordinates}
         originRadius={originRadius}
         destinationCoordinates={destinationCoordinates}
         destinationRadius={destinationRadius}/>}
 
-      <RouteSidebar routes={apiRoutes} onRouteSelect={handleRouteSelect}
-        setApiRoutes={handleSearchResults}
-      />
-
-      {/* Pass the filtered routes to MapComponent and RouteSidebar */}
-      {/* {filteredRoutes.length > 0 && (
-        <MapComponent 
-          key={JSON.stringify(filteredRoutes)} 
-          routes={filteredRoutes} 
-          radius={searchRadius} 
-          center={searchCenter}
-        />
-      )}
-
       <RouteSidebar 
         routes={filteredRoutes} 
-        onRouteSelect={handleRouteSelect} 
-      /> */}
+        onRouteSelect={handleRouteSelect}
+        setApiRoutes={setApiRoutes}
+      />
 
-      {/* Date Range Slider */}
+      {/* Date Range Slider with date props */}
       {apiRoutes.length > 0 && (
-        <DateRangeSlider onFilterChange={handleDateFilter} />
+        <DateRangeSlider 
+          onFilterChange={handleDateFilter} 
+          originDateFrom={originDateFrom}
+          originDateTo={originDateTo}
+        />
       )}
     </div>
   );
