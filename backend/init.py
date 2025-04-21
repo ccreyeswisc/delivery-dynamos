@@ -1,9 +1,14 @@
+# init.py
+
 import helpers
 import pc_miler_api as pc
 import pandas as pd
 import sqlite3
 from tqdm import tqdm
 
+# -----------------------------------------------------------------------------
+# coordinates of each location for each stop is not natively in dataset
+# this function pre-processes all coordinates for each location
 def get_location_coords(df: pd.DataFrame) -> None:
     df['latitude'] = None
     df['longitude'] = None
@@ -28,7 +33,6 @@ def get_location_coords(df: pd.DataFrame) -> None:
         
         df.at[idx, 'latitude'] = latitude
         df.at[idx, 'longitude'] = longitude
-
 
 if __name__ == '__main__':
     locations_xlsx_path = './data/locations.xlsx'

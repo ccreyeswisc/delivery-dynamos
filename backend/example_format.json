@@ -11,7 +11,7 @@
         "pickup_time": "2025-03-15T09:00:00Z", 
         "dropoff_time": "2025-03-15T12:00:00Z", 
         "address_line_1": "1234 Industrial St",
-        "address_line_2": "Suite 100", 
+        "address_line_2": "Suite 100",
         "city": "New York",
         "state": "NY",
         "postal_code": "10001",

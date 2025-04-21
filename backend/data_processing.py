@@ -1,15 +1,17 @@
+# data_processing.py
+
 import sqlite3
 import pandas as pd
 from tqdm import tqdm
 import asyncio
 import random
 from datetime import datetime
-
 import pc_miler_api as pc
 
 # Cache results of all_routes() after first call
 cached_routes = None
 
+# -----------------------------------------------------------------------------
 # Formats the combined routes/locations data by renaming columns and removing unnecessary columns in place
 def format_routes(df: pd.DataFrame) -> None:
 
@@ -40,7 +42,8 @@ def format_routes(df: pd.DataFrame) -> None:
     for i in range(len(df)):
         df.at[i, 'cost'] = "{:.2f}".format(round(random.random() * 1000, 2))
 
-# GET Request for Flask API
+# -----------------------------------------------------------------------------
+# Grabs all routes saved in routes.db
 def all_routes() -> pd.DataFrame:
 
     con = sqlite3.connect('./routes.db')
@@ -67,20 +70,23 @@ def all_routes() -> pd.DataFrame:
     
     return routes
 
-async def get_start_info(start_location, start_radius):
+# -----------------------------------------------------------------------------
+async def get_start_zips(start_location, start_radius):
     start_coords = await asyncio.to_thread(pc.address_to_coords, start_location)
     start_lat = start_coords['Coords']['Lat']
     start_lng = start_coords['Coords']['Lon']
     start_zips = await asyncio.to_thread(pc.radius_zips, 'all', start_lat, start_lng, start_radius)
     return start_zips
 
-async def get_end_info(end_location, end_radius):
+# -----------------------------------------------------------------------------
+async def get_end_zips(end_location, end_radius):
     end_coords = await asyncio.to_thread(pc.address_to_coords, end_location)
     end_lat = end_coords['Coords']['Lat']
     end_lng = end_coords['Coords']['Lon']
     end_zips = await asyncio.to_thread(pc.radius_zips, 'all', end_lat, end_lng, end_radius)
     return end_zips
 
+# -----------------------------------------------------------------------------
 # POST Request for Flask API
 def search_routes(start_location: str = None, start_radius: str = None, start_pickup_datetime_threshold: str = None, start_dropoff_datetime_threshold: str = None, end_location: str = None, end_radius: str = None, end_pickup_datetime_threshold: str = None, end_dropoff_datetime_threshold: str = None) -> pd.DataFrame:
     
@@ -91,12 +97,12 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
     async def resolve_zip_codes():
         tasks = []
         if start_location and start_radius:
-            tasks.append(get_start_info(start_location, start_radius))
+            tasks.append(get_start_zips(start_location, start_radius))
         else:
             tasks.append(asyncio.sleep(0, result=None))
 
         if end_location and end_radius:
-            tasks.append(get_end_info(end_location, end_radius))
+            tasks.append(get_end_zips(end_location, end_radius))
         else:
             tasks.append(asyncio.sleep(0, result=None))
 
@@ -106,7 +112,7 @@ def search_routes(start_location: str = None, start_radius: str = None, start_pi
     start_zips, end_zips = asyncio.run(resolve_zip_codes())
     # print(f'Time to grab start and end zips: {round((datetime.now() - debug_start_time).total_seconds(), 3)}')
 
-    # empty dataframe to fill with filtered routes
+    # shallow copy of df to insert routes that match filter
     filtered_routes = unfiltered_routes.iloc[0:0].copy()
 
     def check_dates(start: pd.Series, end: pd.Series, start_pickup_datetime_threshold: str = None, start_dropoff_datetime_threshold: str = None, end_pickup_datetime_threshold: str = None, end_dropoff_datetime_threshold: str = None) -> bool:
@@ -167,7 +173,7 @@ if __name__ == '__main__':
     # routes = all_routes()
     # print(routes.loc[0].to_dict())
 
-    ############################################
+    # -----------------------------------------------------------------------------
 
     start_location = 'Madison, WI'
     start_radius = '50.0'

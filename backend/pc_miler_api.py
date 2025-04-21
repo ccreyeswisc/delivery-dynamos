@@ -1,3 +1,5 @@
+# pc_miler_api.py
+
 import sqlite3
 import requests
 from urllib.parse import urlencode
@@ -13,7 +15,8 @@ cur = con.cursor()
 region = 'na'
 apikey = getenv('PC_MILER_API_KEY')
 
-# Finds the coordinates of a string search of (City, State)
+# -----------------------------------------------------------------------------
+# Finds the coordinates of an address
 def address_to_coords(query: str) -> dict:
 
     url = f'https://singlesearch.alk.com/{region}/api/search'
@@ -31,6 +34,7 @@ def address_to_coords(query: str) -> dict:
     obj = response.json()
     return obj['Locations'][0]
 
+# -----------------------------------------------------------------------------
 # Grabs all ZIP codes within `radius` miles of a coordinate pair
 def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
 
@@ -57,6 +61,7 @@ def radius_zips(query: str, lat: str, lng: str, radius: float) -> dict:
 
     return list(set(zip_codes))
 
+# -----------------------------------------------------------------------------
 # Finds all Locations from the SQLite database that match any of the zip codes in `zips`
 def places_in_zip(zips: list[str]) -> list[dict]:
     zips_str = ', '.join(f"'{z}'" for z in zips)

@@ -1,16 +1,16 @@
+# flask_app.py
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import sqlite3
 import requests
 from urllib.parse import urlencode
+import sqlite3
 from json import loads
 from datetime import datetime
-import data_processing as dp
-from geopy.geocoders import Nominatim # Used for obtaining address
-from flask_cors import CORS  # Import the CORS package; used for tracking location
-
+from geopy.geocoders import Nominatim
 from dotenv import load_dotenv
 from os import getenv
+import data_processing as dp
 
 app = Flask(__name__)
 CORS(app)
