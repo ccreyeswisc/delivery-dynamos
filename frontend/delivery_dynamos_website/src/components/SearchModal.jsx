@@ -70,8 +70,6 @@ const SearchModal = ({ show, handleClose, setApiRoutes, setOriginCoordinatesInAp
 
       const data = await response.json();
       return data?.Coords ? { lat: Number(data.Coords.Lat), lon: Number(data.Coords.Lon) } : null;
-      // console.log(`Coordinates for ${cityName}:`, data);
-      // return data;
     } catch (err) {
       console.error(err.message);
       return null;
@@ -93,12 +91,15 @@ const SearchModal = ({ show, handleClose, setApiRoutes, setOriginCoordinatesInAp
     console.log("Origin Coordinates:", originCoords);
     console.log("Destination Coordinates:", destinationCoords);
     
+    // Converting DayJS objects to JavaScript Dates for the API
+    const fromDate = originDateFrom ? originDateFrom.toDate() : null;
+    const toDate = originDateTo ? originDateTo.toDate() : null;
 
     const requestBody = {
       start_location: origin,
       start_radius: originRadius,
-      start_pickup_time: originDateFrom ? originDateFrom.toISOString() : null,
-      start_dropoff_time: originDateTo ? originDateTo.toISOString() : null,
+      start_pickup_time: fromDate ? fromDate.toISOString() : null,
+      start_dropoff_time: toDate ? toDate.toISOString() : null,
       end_location: destination,
       end_radius: destinationRadius,
       end_pickup_time: destinationDateFrom ? destinationDateFrom.toISOString() : null,
@@ -138,11 +139,17 @@ const SearchModal = ({ show, handleClose, setApiRoutes, setOriginCoordinatesInAp
           duration: route.total_distance ? `${Math.ceil(route.total_distance / 60)} hrs` : 'N/A',
           distance: route.total_distance ? `${route.total_distance} mi` : 'N/A',
           pay: route.cost ? `$${route.cost}` : 'N/A',
-          stops: route.stops
+          stops: route.stops,
+          pickupDate: firstStop.pickup_time ? new Date(firstStop.pickup_time) : null
         };
       });
 
-      setApiRoutes(formattedRoutes); // Update routes in App
+      // Pass both the routes and the date range to the parent component
+      setApiRoutes(formattedRoutes, {
+        originDateFrom: fromDate,
+        originDateTo: toDate
+      }); 
+      
       handleClose(); // Close modal
     } catch (error) {
       console.error('Error searching routes:', error);
@@ -194,8 +201,18 @@ const SearchModal = ({ show, handleClose, setApiRoutes, setOriginCoordinatesInAp
                   className="mb-3"
                 />
                 <div className="d-flex gap-2">
-                  <DatePicker label="From" value={originDateFrom} onChange={setOriginDateFrom} renderInput={(params) => <TextField {...params} fullWidth />} />
-                  <DatePicker label="To" value={originDateTo} onChange={setOriginDateTo} renderInput={(params) => <TextField {...params} fullWidth />} />
+                  <DatePicker 
+                    label="From" 
+                    value={originDateFrom} 
+                    onChange={setOriginDateFrom} 
+                    renderInput={(params) => <TextField {...params} fullWidth />} 
+                  />
+                  <DatePicker 
+                    label="To" 
+                    value={originDateTo} 
+                    onChange={setOriginDateTo} 
+                    renderInput={(params) => <TextField {...params} fullWidth />} 
+                  />
                 </div>
               </div>
 
@@ -231,8 +248,18 @@ const SearchModal = ({ show, handleClose, setApiRoutes, setOriginCoordinatesInAp
                   className="mb-3"
                 />
                 <div className="d-flex gap-2">
-                  <DatePicker label="From" value={destinationDateFrom} onChange={setDestinationDateFrom} renderInput={(params) => <TextField {...params} fullWidth />} />
-                  <DatePicker label="To" value={destinationDateTo} onChange={setDestinationDateTo} renderInput={(params) => <TextField {...params} fullWidth />} />
+                  <DatePicker 
+                    label="From" 
+                    value={destinationDateFrom} 
+                    onChange={setDestinationDateFrom} 
+                    renderInput={(params) => <TextField {...params} fullWidth />} 
+                  />
+                  <DatePicker 
+                    label="To" 
+                    value={destinationDateTo} 
+                    onChange={setDestinationDateTo} 
+                    renderInput={(params) => <TextField {...params} fullWidth />} 
+                  />
                 </div>
               </div>
             </LocalizationProvider>
