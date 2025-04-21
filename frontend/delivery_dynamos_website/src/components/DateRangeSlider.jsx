@@ -1,9 +1,41 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Slider, Typography, Switch, FormControlLabel } from '@mui/material';
 
-const DateRangeSlider = ({ onFilterChange }) => {
+const DateRangeSlider = ({ onFilterChange, originDateFrom, originDateTo }) => {
   const [value, setValue] = useState(30); // Default: show all routes up to 30 days
-  const [showAll, setShowAll] = useState(true); // New state to toggle all routes
+  const [showAll, setShowAll] = useState(true); // Toggle for showing all routes
+  const [minDate, setMinDate] = useState(new Date());
+  const [maxDate, setMaxDate] = useState(new Date());
+  const [dateRange, setDateRange] = useState(30); // Default 30 days
+  
+  // Set up the date range when component mounts or when search dates change
+  useEffect(() => {
+    // If we have valid search dates from the origin search
+    if (originDateFrom && originDateTo) {
+      // Convert DayJS objects to JavaScript Dates if needed
+      const fromDate = originDateFrom.toDate ? originDateFrom.toDate() : new Date(originDateFrom);
+      const toDate = originDateTo.toDate ? originDateTo.toDate() : new Date(originDateTo);
+      
+      // Calculate the difference in days between the dates
+      const diffTime = Math.abs(toDate - fromDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      setMinDate(fromDate);
+      setMaxDate(toDate);
+      setDateRange(diffDays || 1); // Use calculated range (min 1 day)
+      setValue(diffDays || 1); // Start with showing the full range
+    } else {
+      // Default to today + 30 days if no search dates
+      const today = new Date();
+      const thirtyDaysLater = new Date();
+      thirtyDaysLater.setDate(today.getDate() + 30);
+      
+      setMinDate(today);
+      setMaxDate(thirtyDaysLater);
+      setDateRange(30);
+      setValue(30);
+    }
+  }, [originDateFrom, originDateTo]);
   
   // Use useCallback to memoize the filter function
   const applyFilter = useCallback(() => {
@@ -19,7 +51,6 @@ const DateRangeSlider = ({ onFilterChange }) => {
   // Handle slider change
   const handleChange = (event, newValue) => {
     setValue(newValue);
-    // Don't call onFilterChange directly here
   };
 
   // Handle slider change complete (only trigger filter when user stops sliding)
@@ -37,13 +68,38 @@ const DateRangeSlider = ({ onFilterChange }) => {
   // Apply the filter when component mounts or when showAll changes
   useEffect(() => {
     applyFilter();
-    // Only re-run when showAll or applyFilter changes
   }, [showAll, applyFilter]);
 
   // Format the label to show actual date
   const valueText = (value) => {
-    const date = new Date();
-    date.setDate(date.getDate() + value);
+    // Create a new date object for the label based on minDate + days
+    const date = new Date(minDate);
+    date.setDate(minDate.getDate() + value);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getMarks = () => {
+    const marks = [
+      { value: 0, label: 'Start' }
+    ];
+    if (dateRange >= 7) marks.push({ value: Math.min(7, dateRange), label: '1w' });
+    if (dateRange >= 14) marks.push({ value: Math.min(14, dateRange), label: '2w' });
+    if (dateRange >= 30) marks.push({ value: 30, label: '1m' });
+    
+    if (dateRange > 1) {
+      // Only add End label if it's not too close to 1m
+      if (Math.abs(dateRange - 30) > 5) {
+        marks.push({ value: dateRange, label: 'End' });
+      } else {
+        marks.push({ value: dateRange, label: '' });
+      }
+    }
+    
+    return marks;
+  };
+
+  // Format the start and end dates
+  const formatDateLabel = (date) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -86,7 +142,7 @@ const DateRangeSlider = ({ onFilterChange }) => {
         valueLabelDisplay="auto"
         valueLabelFormat={valueText}
         min={0}
-        max={30}
+        max={dateRange}
         disabled={showAll}
         sx={{
           ml: 0.5,
@@ -96,20 +152,29 @@ const DateRangeSlider = ({ onFilterChange }) => {
           },
           '& .MuiSlider-markLabel[data-index="0"]': {
             transform: 'translateX(-50%)',
+          },
+          '& .MuiSlider-markLabel[data-index="4"]': { // End label
+            transform: 'translateX(-50%)',
           }
         }}
-        marks={[
-          { value: 0, label: 'Today' },
-          { value: 7, label: '1w' },
-          { value: 14, label: '2w' },
-          { value: 30, label: '1m' },
-        ]}
+        marks={getMarks()}
       />
       
       {!showAll && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-          <Typography variant="body2">Today</Typography>
-          <Typography variant="body2">{valueText(value)}</Typography>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            mt: 1,
+            px: 0.2
+          }}
+        >
+          <Typography variant="body2" sx={{ minWidth: '60px' }}>
+            {formatDateLabel(minDate)}
+          </Typography>
+          <Typography variant="body2" sx={{ minWidth: '60px', textAlign: 'right' }}>
+            {formatDateLabel(new Date(minDate.getTime() + (value * 24 * 60 * 60 * 1000)))}
+          </Typography>
         </Box>
       )}
     </Box>
