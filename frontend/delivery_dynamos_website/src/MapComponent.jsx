@@ -6,6 +6,7 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
   const { selectedRouteId, setSelectedRouteId } = useContext(RouteContext);
   const [location, setLocation] = useState({ lat: null, lng: null });
   const mapRef = useRef(null);
+  const markerRef = useRef(null)
   const routesRef = useRef([]);
 
   const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
@@ -160,19 +161,6 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         });
       }
 
-      // Display user location if available
-      if (location.lat && location.lng) {
-        const userLocationEl = document.createElement("div");
-        userLocationEl.className = "custom-marker user-location-marker"; // Custom class for user location
-  
-        new window.TrimbleMaps.Marker({ element: userLocationEl })
-          .setLngLat([location.lng, location.lat])
-          .addTo(map);
-  
-        map.setCenter([location.lng, location.lat]);
-        map.setZoom(14); // Optionally zoom in for better visibility
-      }
-
       // If search center and radius are provided, draw a circle
       if (center && radius) {
         // Add a circle around the search center point
@@ -306,7 +294,34 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         mapRef.current.remove();
       }
     };
-  }, [routes, location]);
+  }, [routes]);
+
+  useEffect(() => {
+    if (!mapRef.current || location.lat === null || location.lng === null) {
+      return;
+    }
+  
+    try {
+      // Create user marker if it doesn't exist
+      if (!markerRef.current) {
+        const userLocationEl = document.createElement("div");
+        userLocationEl.className = "custom-marker user-location-marker";
+  
+        markerRef.current = new window.TrimbleMaps.Marker({ element: userLocationEl })
+          .setLngLat([location.lng, location.lat])
+          .addTo(mapRef.current);
+      } else {
+        // Update marker position
+        markerRef.current.setLngLat([location.lng, location.lat]);
+      }
+  
+      // Center and zoom the map on the user's location
+      mapRef.current.setCenter([location.lng, location.lat]);
+      mapRef.current.setZoom(14);
+    } catch (error) {
+      console.error("Error updating user location marker:", error);
+    }
+  }, [location]);
 
   // Track user location
   useEffect(() => {
