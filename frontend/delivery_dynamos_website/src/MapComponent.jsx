@@ -1,11 +1,14 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { RouteContext } from "./context/RouteContext";
+import { Button } from 'react-bootstrap';
 import "./App.css";
+import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoordinates, destinationRadius, radius, center }) => {
   const { selectedRouteId, setSelectedRouteId } = useContext(RouteContext);
   const [location, setLocation] = useState({ lat: null, lng: null });
   const mapRef = useRef(null);
+  const markerRef = useRef(null)
   const routesRef = useRef([]);
 
   const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
@@ -160,19 +163,6 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         });
       }
 
-      // Display user location if available
-      if (location.lat && location.lng) {
-        const userLocationEl = document.createElement("div");
-        userLocationEl.className = "custom-marker user-location-marker"; // Custom class for user location
-  
-        new window.TrimbleMaps.Marker({ element: userLocationEl })
-          .setLngLat([location.lng, location.lat])
-          .addTo(map);
-  
-        map.setCenter([location.lng, location.lat]);
-        map.setZoom(14); // Optionally zoom in for better visibility
-      }
-
       // If search center and radius are provided, draw a circle
       if (center && radius) {
         // Add a circle around the search center point
@@ -306,7 +296,35 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         mapRef.current.remove();
       }
     };
-  }, [routes, location]);
+  }, [routes]);
+
+  useEffect(() => {
+    if (!mapRef.current || location.lat === null || location.lng === null) {
+      return;
+    }
+  
+    try {
+      // Create user marker if it doesn't exist
+      if (!markerRef.current) {
+        const userLocationEl = document.createElement("div");
+        userLocationEl.className = "custom-marker user-location-marker";
+  
+        markerRef.current = new window.TrimbleMaps.Marker({ element: userLocationEl })
+          .setLngLat([location.lng, location.lat])
+          .addTo(mapRef.current);
+      } else {
+        // Update marker position
+        markerRef.current.setLngLat([location.lng, location.lat]);
+      }
+
+      // if (initial_load != true) {
+      //   initial_load = true;
+      // }
+
+    } catch (error) {
+      console.error("Error updating user location marker:", error);
+    }
+  }, [location]);
 
   // Track user location
   useEffect(() => {
@@ -350,7 +368,33 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
     });
   }, [selectedRouteId]);
 
-  return <div id="map" style={{ height: "100vh" }} />;
+  return (
+    <div>
+      <div id="map" style={{ height: "100vh" }}/>
+      <Button
+      variant="light"
+      onClick={() => {
+        mapRef.current.setCenter([location.lng, location.lat]);
+        mapRef.current.setZoom(14);
+      }}
+      style={{
+        position: 'absolute',
+        top: '97px',
+        left: '12px',
+        width: '58px',
+        height: '58px',
+        zIndex: 1000,
+        border: '1px solid #ccc',
+        padding: '12px',
+        borderRadius: '50%',
+        backgroundColor: 'white',
+        minWidth: 'unset'
+      }}
+    >
+      <MyLocationIcon style={{ fontSize: '32px' }} />
+    </Button>
+    </div>
+  );
 };
 
 export default MapComponent;
