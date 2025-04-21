@@ -1,6 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { RouteContext } from "./context/RouteContext";
+import { Button } from 'react-bootstrap';
 import "./App.css";
+import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoordinates, destinationRadius, radius, center }) => {
   const { selectedRouteId, setSelectedRouteId } = useContext(RouteContext);
@@ -314,10 +316,11 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         // Update marker position
         markerRef.current.setLngLat([location.lng, location.lat]);
       }
-  
-      // Center and zoom the map on the user's location
-      mapRef.current.setCenter([location.lng, location.lat]);
-      mapRef.current.setZoom(14);
+
+      // if (initial_load != true) {
+      //   initial_load = true;
+      // }
+
     } catch (error) {
       console.error("Error updating user location marker:", error);
     }
@@ -365,7 +368,33 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
     });
   }, [selectedRouteId]);
 
-  return <div id="map" style={{ height: "100vh" }} />;
+  return (
+    <div>
+      <div id="map" style={{ height: "100vh" }}/>
+      <Button
+      variant="light"
+      onClick={() => {
+        mapRef.current.setCenter([location.lng, location.lat]);
+        mapRef.current.setZoom(14);
+      }}
+      style={{
+        position: 'absolute',
+        top: '97px',
+        left: '12px',
+        width: '58px',
+        height: '58px',
+        zIndex: 1000,
+        border: '1px solid #ccc',
+        padding: '12px',
+        borderRadius: '50%',
+        backgroundColor: 'white',
+        minWidth: 'unset'
+      }}
+    >
+      <MyLocationIcon style={{ fontSize: '32px' }} />
+    </Button>
+    </div>
+  );
 };
 
 export default MapComponent;
