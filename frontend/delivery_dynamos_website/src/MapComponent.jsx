@@ -379,7 +379,7 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
       }}
       style={{
         position: 'absolute',
-        top: '97px',
+        top: '77px',
         left: '12px',
         width: '58px',
         height: '58px',
@@ -387,7 +387,6 @@ const MapComponent = ({ routes, originCoordinates, originRadius, destinationCoor
         border: '1px solid #ccc',
         padding: '12px',
         borderRadius: '50%',
-        backgroundColor: 'white',
         minWidth: 'unset'
       }}
     >
