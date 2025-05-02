@@ -1,34 +1,55 @@
-# delivery-dynamos
+# Delivery Dynamos (CS 620 Capstone -- Schneider Team 2)
+
+## Link
+
+https://github.com/ccreyeswisc/delivery-dynamos/
+
+## Installation
+
+After cloning the repository, perform the following steps:
+
+1. In `/backend` and `/frontend/delivery-dynamos-website/`, create `.env` files from their templates using your PC Miler API key.
+2. Activate the virtual environment by running `source venv/bin/activate` in the source directory.
+3. Ensure that `/backend/routes.db` exists. If not, run `python3 init.py` from the /backend/ directory.
+4. Download Docker and run the Docker daemon on your computer.
+5. Start the server using `docker compose up` in the source directory.
 
 ## Overview
 
-Our app is a map-based web application designed to assist Schneider’s clients in finding the most suitable routes based on their specific needs. The application prioritizes UI-friendliness, efficiency, and respect for users' time, providing valuable route insights to enhance decision-making.
+Our app is a map-based web application designed to assist Schneider’s clients in finding the most suitable routes based on their specific needs. The application prioritizes UI-friendliness, efficiency, and respect for users' time, providing valuable route insights to enhance decision-making. Our general program flows as such:
+
+1. User inputs search parameters from Search Modal
+
+2. Backend:
+
+     Processes date ranges
+
+     Pings geolocation API to grab valid ZIP codes from search locations and radii
+
+     Grabs data from SQL tables and filters based on parameters
+
+3. Frontend displays data on-screen in map/sidebar components
+
 
 ## Features
-* Map-Based Search: Displays routes visually with key information.
-* Weather Overlay: Shows extreme weather conditions affecting different areas.
-* Pickup & Drop-Off Points: Clearly marks start and end locations.
-* Shift Length Display: Provides real-time updates on the length of the current shift.
-* Radius Indicators: Highlights proximity around start and end points.
-* User-Defined Best Route Selection: Allows users to choose routes based on:
-  * Price
-  * Proximity
-  * Fuel efficiency (gas consumption)
-  * Time efficiency
-* Color-Coded Routes:
-  * Displays all possible routes with a gradient system.
-  * The best route is highlighted using the brightest/darkest color for quick identification.
 
-## Success Criteria
+- Map-Based Search: Displays routes visually with key information cards for each route.
+- Pickup & Drop-Off Points: Clearly marks start and end locations.
+- Radius Indicators: Highlights proximity around start and end points.
+- Route Map Filters: Filters displayed routes based on pickup and dropoff dates
 
-Our success is measured by:
-* Developing a user-friendly UI that enhances accessibility and usability.
-* Implementing features that respect users' time by providing efficient and accurate routing information.
-* Creating a functional, intuitive, and visually appealing application for Schneider’s clients.
+## Future Features
+
+Given more time, here are some features we would want to implement:
+
+- Buffer for search radius (Given a search of 100 miles, display an extra 20 miles past to show drivers any routes that are just beyond their search)
+- Route ranking based on user preferences for miles, price, dates, etc.
+- Weather updates for the search area and dates
 
 ## Tech Stack
-* Frontend: React
+
+* Frontend: React.js, Vite, React Bootstrap, Material UI
 * Backend: Python, Flask
-* Mapping & GIS: TBD
-* Database: TBD
-* Hosting: TBD 
+* Mapping: PC Miler
+* Data Processing/Storage: pandas, SQLite
+* Containerization: Docker 
