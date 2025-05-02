@@ -11,4 +11,4 @@ COPY backend/ /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the Flask app
-CMD ["sh", "-c", "python3 init.py && python3 flask_app.py"]
+CMD ["python3", "flask_app.py"]
