@@ -11,8 +11,11 @@ After cloning the repository, perform the following steps:
 1. In `/backend` and `/frontend/delivery-dynamos-website/`, create `.env` files from their templates using your PC Miler API key.
 2. Activate the virtual environment by running `source venv/bin/activate` in the source directory.
 3. Ensure that `/backend/routes.db` exists. If not, run `python3 init.py` from the /backend/ directory.
-4. Download Docker and run the Docker daemon on your computer.
-5. Start the server using `docker compose up` in the source directory.
+4. Run the backend, `flask_app.py`, in the `/backend` directory: `python3 flask_app.py`.
+5. In a separate terminal, run the frontend in `/frontend/delivery-dynamos-website` using `npm run dev`.
+6. Open `localhost:5173` on your browser.
+
+Note: Dockerfiles to run the backend and frontend have issues with npm's optional dependencies, and are not functional.
 
 ## Overview
 
